@@ -1,0 +1,222 @@
+<!DOCTYPE HTML>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="google-site-verification" content>
+  
+  <title>【Spring Cloud】详解Feign常用配置</title>
+  <meta name="author" content="Emac">
+   <meta name="description" content="1 Feign常用配置搭载着Spring Cloud的顺风车，Feign正以席卷之势成为使用Spring架构的大大小小互联网公司发起HTTP调用的首选框架。基于接口的声明式定义、客户端负载均衡、断路器和后备方法（fallback）是Feign相对上一代HTTP调用框架（比如Spring Templa">
+  
+
+  <meta property="og:title" content="【Spring Cloud】详解Feign常用配置">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta property="og:site_name" content="Emac">
+ <meta property="og:image" content="undefined">
+  
+  <link href="/apple-touch-icon-precomposed.png" sizes="180x180" rel="apple-touch-icon-precomposed">
+  <link rel="alternate" href="/atom.xml" title="Emac" type="application/atom+xml">
+  <link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.5.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/m.min.css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+</head>
+</html>
+<body>
+  <div id='wx_pic' style='display:none;'><img src='/wx_share.png'/></div>
+  <div id="main">
+    <div class="behind">
+      <div class="back">
+        <a href="/" class="black-color"><i class="fa fa-times" aria-hidden="true"></i></a>
+      </div>
+      <div class="description">
+        &nbsp;拾贝
+      </div>
+    </div>
+    <div class="container">
+      
+
+  <article class="standard post">
+    <div class="title">
+      
+  
+    <h1 class="page-title center">
+        【Spring Cloud】详解Feign常用配置
+    </h1>
+  
+
+
+    </div>
+    <div class="meta center">
+      
+<time datetime="2020-03-21T16:00:00.000Z">
+  <i class="fa fa-calendar"></i>&nbsp;
+  2020-03-22
+</time>
+
+
+
+    
+    &nbsp;
+    <i class="fa fa-tag"></i>&nbsp;
+    <a href="/categories/backend/">backend</a>
+
+
+
+
+    
+    &nbsp;
+    <i class="fa fa-tag"></i>&nbsp;
+    <a href="/tags/原创/">原创</a>·<a href="/tags/Spring-Cloud/">Spring Cloud</a>
+
+
+    </div>
+    <hr>
+    <div class="picture-container">
+      
+    </div>
+    <h2 id="1-Feign常用配置"><a href="#1-Feign常用配置" class="headerlink" title="1 Feign常用配置"></a>1 Feign常用配置</h2><p>搭载着Spring Cloud的顺风车，Feign正以席卷之势成为使用Spring架构的大大小小互联网公司发起HTTP调用的首选框架。基于接口的声明式定义、客户端负载均衡、断路器和后备方法（fallback）是Feign相对上一代HTTP调用框架（比如Spring Template，Apache HttpClient）的四大优势。</p>
+<p>类似于Retrofit和OkHttp的关系，Feign实际上是对普通HTTP客户端的一层封装，其目的是降低集成成本、提升可靠性。Feign支持三种HTTP客户端，包括JDK自带的HttpURLConnection、Apache HttpClient和Square OkHttp，默认使用Apache HttpClient。</p>
+<ul>
+<li>HttpURLConnection：不支持线程池，一般不会选用。</li>
+<li>HttpClient：相比OkHttp，HttpClient并没有明显的优势，可能是因为使用更广泛，所以被Feign选为默认实现。从5.0版本开始才支持HTTP/2。</li>
+<li>OkHttp：开发Android应用的首选HTTP客户端，支持HTTP/2，通过设置<code>feign.okhttp.enabled=true</code>启用。</li>
+</ul>
+<p>Feign提供了两大类配置属性来配置上述三种HTTP客户端，<code>feign.client.*</code>和<code>feign.httpclient.*</code>，前者支持按实例进行配置（注解-1），后者全局共享一套配置，包含线程池配置，但只影响HttpClient和OkHttp，不影响HttpURLConnection，具体关系见下表。</p>
+<blockquote>
+<p>注解-1：所谓按实例进行配置，就是指每个FeignClient实例都可以通过<code>feign.client.&lt;feignClientName&gt;.*</code>来单独进行配置，注意首字母小写。而<code>feign.client.default.*</code>表示默认配置。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>HTTP客户端</th>
+<th>连接超时时间</th>
+<th>请求超时时间</th>
+<th>线程存活时间</th>
+<th>线程池最大连接数（全局）</th>
+<th>线程池最大连接数（单个HOST）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HttpURLConnection</td>
+<td>feign.client.<code>[default&#124;&lt;feignClientName&gt;].connect-timeout</code><br>默认值：10秒</td>
+<td>feign.client.<code>[default&#124;&lt;feignClientName&gt;].read-timeout</code><br>默认值：60秒</td>
+<td>N/A</td>
+<td>N/A</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td>HttpClient</td>
+<td>feign.httpclient.connection-timeout<br>默认值：2秒</td>
+<td>默认值：-1（RequestConfig.Builder.socketTimeout）</td>
+<td>feign.httpclient.time-to-live<br>默认值：900秒</td>
+<td>feign.httpclient.max-connections<br>默认值：200</td>
+<td>feign.httpclient.max-connections-per-route<br>默认值：50</td>
+</tr>
+<tr>
+<td>OkHttp</td>
+<td>feign.httpclient.connection-timeout<br>默认值：2秒</td>
+<td>feign.client.<code>[default&#124;&lt;feignClientName&gt;].read-timeout</code><br>默认值：10秒</td>
+<td>feign.httpclient.time-to-live<br>默认值：900秒</td>
+<td>feign.httpclient.max-connections<br>默认值：200</td>
+<td>N/A</td>
+</tr>
+</tbody>
+</table>
+<p>从上表可以看到，Feign提供了两个连接超时配置，HttpURLConnection使用<code>feign.client.[default|&lt;feignClientName&gt;].connect-timeout</code>，而HttpClient和OkHttp则使用<code>feign.httpclient.connection-timeout</code>，这一点要尤其注意。</p>
+<h2 id="2-启用Hystrix"><a href="#2-启用Hystrix" class="headerlink" title="2 启用Hystrix"></a>2 启用Hystrix</h2><p>通过设置<code>feign.hystrix.enabled=true</code>可以启用Feign的断路器支持（基于Hystrix）。跟Feign一样，Hystrix也支持按实例进行配置，详细配置属性参见<a href="https://github.com/Netflix/Hystrix/wiki/Configuration" target="_blank" rel="noopener">官方文档</a>。</p>
+<p>由于Hystrix默认的请求超时时间为1秒，很容易触发超时异常，所以往往需要调大。调大超时时间有两种方式，</p>
+<ul>
+<li>第一种方式，通过<code>hystrix.command.default.execution.isolation.thread.timeoutInMilliseconds</code>设置默认超时时间，影响所有请求。</li>
+<li>第二种方式，如果你不想改变所有请求的超时时间，那么可以通过<code>hystrix.command.&lt;HystrixCommandKey&gt;.execution.isolation.thread.timeoutInMilliseconds</code>单独设置某个Hystrix Command的超时时间。那么问题来了，Feign下面，这个Hystrix Command Key到底是什么呢，是和Feign Client Name一样吗？答案是否定的。Feign下面，一个Hystrix Command对应的是Feign Client的一个方法，因此Hystrix Command Key的定义为<code>&lt;FeignClientName&gt;#&lt;methodName&gt;(&lt;arg1ClassName&gt;,&lt;arg2ClassName&gt;...)</code>，注意首字母大写，详见<code>SetterFactory.Default#create()</code>方法。</li>
+</ul>
+<h2 id="3-小结"><a href="#3-小结" class="headerlink" title="3 小结"></a>3 小结</h2><p>不管是Spring还是Spring Cloud，由于整个生态过于庞大，因此即便是官方文档，也只能勉强覆盖各个组件的大体框架，一旦深入细节就只能靠开发者自己研读源码来寻找答案。就像Linus Torvalds说的，<code>Talk is cheap. Show me the code.</code></p>
+<p><img src="quote-talk-is-cheap-show-me-the-code-linus-torvalds.jpg" alt></p>
+<h2 id="4-参考"><a href="#4-参考" class="headerlink" title="4 参考"></a>4 参考</h2><ul>
+<li><a href="https://cloud.spring.io/spring-cloud-openfeign/reference/html/" target="_blank" rel="noopener">Spring Cloud OpenFeign</a></li>
+<li><a href="https://www.cnblogs.com/wlandwl/p/feign.html" target="_blank" rel="noopener">Spring cloud Feign 深度学习与应用</a></li>
+<li><a href="https://www.jianshu.com/p/c836a283631e" target="_blank" rel="noopener">Spring Cloud组件那么多超时设置，如何理解和运用？</a></li>
+</ul>
+
+
+  </article>
+  </script>
+    <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+  </script>
+  <div class="busuanzi center">
+    页阅读量:&nbsp;<span id="busuanzi_value_page_pv"></span>&nbsp;・&nbsp;
+    站访问量:&nbsp;<span id="busuanzi_value_site_pv"></span>&nbsp;・&nbsp;
+    站访客数:&nbsp;<span id="busuanzi_value_site_uv"></span>
+  </div>
+
+
+
+
+    </div>
+  </div>
+  <footer class="page-footer"><div class="clearfix">
+</div>
+<div class="right-foot container">
+    <div class="firstrow">
+        <a href="#top" >
+        <i class="fa fa-arrow-right"></i>
+        </a>
+        © emacoo.cn 2015-2020
+    </div>
+    <div class="secondrow">
+        <a href="https://github.com/gaoryrt/hexo-theme-pln">
+        
+        </a>
+    </div>
+</div>
+<div class="clearfix">
+</div>
+</footer>
+  <script src="//cdn.bootcss.com/jquery/2.2.1/jquery.min.js"></script>
+<script src="/js/search.js"></script>
+<script type="text/javascript">
+
+// comments below to disable loading animation
+function revealOnScroll() {
+  var scrolled = $(window).scrollTop();
+  $(".excerpt, .index-title, .index-meta, p").each(function() {
+    var current = $(this),
+      height = $(window).outerHeight(),
+      offsetTop = current.offset().top;
+    (scrolled + height + 50 > offsetTop) ? current.addClass("animation"):'';
+  });
+}
+$(window).on("scroll", revealOnScroll);
+$(document).ready(revealOnScroll)
+
+// disqus scripts
+
+
+// dropdown scripts
+$(".dropdown").click(function(event) {
+  var current = $(this);
+  event.stopPropagation();
+  $(current).children(".dropdown-content")[($(current).children(".dropdown-content").hasClass("open"))?'removeClass':'addClass']("open")
+});
+$(document).click(function(){
+    $(".dropdown-content").removeClass("open");
+})
+
+// back to top scripts
+$("a[href='#top']").click(function() {
+  $("html, body").animate({ scrollTop: 0 }, 500);
+  return false;
+});
+
+
+var path = "/search.xml";
+searchFunc(path, 'local-search-input', 'local-search-result');
+
+</script>
+
+</body>
+</html>

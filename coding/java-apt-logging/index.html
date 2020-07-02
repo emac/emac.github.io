@@ -1,0 +1,199 @@
+<!DOCTYPE HTML>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="google-site-verification" content>
+  
+  <title>【Java进阶】利用APT优雅的实现统一日志格式</title>
+  <meta name="author" content="Emac">
+   <meta name="description" content="统一日志格式的几种方式无论是搭建日志平台还是进行大数据分析，统一日志格式都是一个重要的前提条件。假设要统一成下面的日志格式，
+
+日志格式：[{系统}|{模块}]{描述}[param1=value1$param2=value2]，例如：[API|Weixin]Weixin send message f">
+  
+
+  <meta property="og:title" content="【Java进阶】利用APT优雅的实现统一日志格式">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta property="og:site_name" content="Emac">
+ <meta property="og:image" content="undefined">
+  
+  <link href="/apple-touch-icon-precomposed.png" sizes="180x180" rel="apple-touch-icon-precomposed">
+  <link rel="alternate" href="/atom.xml" title="Emac" type="application/atom+xml">
+  <link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.5.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/m.min.css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+</head>
+</html>
+<body>
+  <div id='wx_pic' style='display:none;'><img src='/wx_share.png'/></div>
+  <div id="main">
+    <div class="behind">
+      <div class="back">
+        <a href="/" class="black-color"><i class="fa fa-times" aria-hidden="true"></i></a>
+      </div>
+      <div class="description">
+        &nbsp;拾贝
+      </div>
+    </div>
+    <div class="container">
+      
+
+  <article class="standard post">
+    <div class="title">
+      
+  
+    <h1 class="page-title center">
+        【Java进阶】利用APT优雅的实现统一日志格式
+    </h1>
+  
+
+
+    </div>
+    <div class="meta center">
+      
+<time datetime="2016-07-09T16:00:00.000Z">
+  <i class="fa fa-calendar"></i>&nbsp;
+  2016-07-10
+</time>
+
+
+
+    
+    &nbsp;
+    <i class="fa fa-tag"></i>&nbsp;
+    <a href="/categories/coding/">coding</a>
+
+
+
+
+    
+    &nbsp;
+    <i class="fa fa-tag"></i>&nbsp;
+    <a href="/tags/原创/">原创</a>·<a href="/tags/Java/">Java</a>
+
+
+    </div>
+    <hr>
+    <div class="picture-container">
+      
+    </div>
+    <h2 id="统一日志格式的几种方式"><a href="#统一日志格式的几种方式" class="headerlink" title="统一日志格式的几种方式"></a>统一日志格式的几种方式</h2><p>无论是搭建日志平台还是进行大数据分析，统一日志格式都是一个重要的前提条件。假设要统一成下面的日志格式，</p>
+<blockquote>
+<p>日志格式：[{系统}|{模块}]{描述}[param1=value1$param2=value2]，例如：[API|Weixin]Weixin send message failed. [senderId=1234$receiverId=5678]</p>
+</blockquote>
+<p>常见的方法有：</p>
+<ul>
+<li>方法1：每次记录日志时，根据上下文在原始的消息内容前后分别加上合适的[{系统}|{模块}]前缀和参数后缀。</li>
+<li>方法2：自定义日志类，将{系统}和{模块}作为构造函数的参数传入，并且在所提供的日志接口中自动格式化传入的参数数组。</li>
+<li>方法3：自定义注解类声明所属的{系统}和{模块}，然后通过AOP的方式，统一在日志中插入[{系统}|{模块}]前缀。</li>
+<li>方法4：在方法2的基础上，自定义注解类声明所属的{系统}和{模块}，然后通过APT自动生成自定义类型的log成员变量。</li>
+</ul>
+<p>方法1依赖于人工来保证统一的日志格式，方法3虽然简化了方法调用，但对性能有一定的影响。方法2是最常见的手段，但每个类都要显示声明log成员变量，略显冗余。方法4兼具方法2和方法3的优点，同时又避免了两者的不足，是一种优雅的实现方式，也是<a href="https://github.com/rzwitserloot/lombok" target="_blank" rel="noopener">lombok</a>所采用的方式。</p>
+<p>下面就针对方法4，结合示例代码介绍一下相关技术。</p>
+<h2 id="APT-编译期自动生成log成员变量"><a href="#APT-编译期自动生成log成员变量" class="headerlink" title="APT: 编译期自动生成log成员变量"></a>APT: 编译期自动生成log成员变量</h2><p><a href="http://docs.oracle.com/javase/6/docs/technotes/guides/apt/" target="_blank" rel="noopener">APT</a>的全称是Annotation Processing Tool，诞生于Java 6版本，主要用于在编译期根据不同的注解类生成或者修改代码。APT运行于独立的JVM进程中（编译之前），并且在一次编译过程中可能会被多次调用。</p>
+<p>首先，声明一个包含{系统}和{模块}定义的日志注解类。注意@Retention应设置为RetentionPolicy.SOURCE，表示编译后擦除该注解信息。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 用于自动生成log成员变量.仅适用于class或enum,不适用于接口.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Retention</span>(RetentionPolicy.SOURCE)</span><br><span class="line"><span class="meta">@Target</span>(ElementType.TYPE)</span><br><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> Slf4j &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 系统名称.如果为空则取"-Dvlogging.system"系统属性,如果系统属性也为空,则取"Unknown".</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function">String <span class="title">system</span><span class="params">()</span> <span class="keyword">default</span> ""</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 模块名称.如果为空则取"-Dvlogging.module"系统属性,如果系统属性也为空,则取"Unknown".</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function">String <span class="title">module</span><span class="params">()</span> <span class="keyword">default</span> ""</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后，声明一个注解处理类，继承Java默认提供的AbstractProcessor类，其中：</p>
+<ul>
+<li>messager: 用于记录处理日志</li>
+<li>trees: 用于解析Java AST树</li>
+<li>maker: 用于生成Java AST节点</li>
+<li>names: 用于生成Java AST节点名称</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Slf4jProcessor</span> <span class="keyword">extends</span> <span class="title">AbstractProcessor</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">(ProcessingEnvironment processingEnv)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.init(processingEnv);</span><br><span class="line">        messager = processingEnv.getMessager();</span><br><span class="line">        trees = Trees.instance(processingEnv);</span><br><span class="line">        Context context = ((JavacProcessingEnvironment) processingEnv).getContext();</span><br><span class="line">        maker = TreeMaker.instance(context);</span><br><span class="line">        names = Names.instance(context);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在process方法中调用Java Compiler API根据注解信息动态生成log日志成员变量：<br><br><code>private static final Logger log = LoggerFactory.getLogger(LoggerFactory.Type.SLF4J, annotatedClass.class, system, module);</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">process</span><span class="params">(Set&lt;? extends TypeElement&gt; annotations, RoundEnvironment roundEnv)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 1 检查类型</span></span><br><span class="line">    roundEnv.getElementsAnnotatedWith(Slf4j<span class="class">.<span class="keyword">class</span>).<span class="title">stream</span>().<span class="title">forEach</span>(<span class="title">elm</span> -&gt; </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (elm.getKind() != ElementKind.CLASS &amp;&amp; elm.getKind() != ElementKind.ENUM) &#123;</span><br><span class="line">            messager.printMessage(Diagnostic.Kind.ERROR, <span class="string">"Only classes or enums can be annotated with "</span> + Slf4j<span class="class">.<span class="keyword">class</span>.<span class="title">getSimpleName</span>())</span>;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 2 检查log成员变量是否已存在</span></span><br><span class="line">        TypeElement typeElm = (TypeElement) elm;</span><br><span class="line">        <span class="keyword">if</span> (typeElm.getEnclosedElements().stream()</span><br><span class="line">                .filter(e -&gt; e.getKind() == ElementKind.FIELD &amp;&amp; Logger.FIELD_NAME.equals(e.getSimpleName())).count() &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            messager.printMessage(Diagnostic.Kind.WARNING, MessageFormat.format(<span class="string">"A member field named &#123;0&#125; already exists in the annotated class"</span>, Logger.FIELD_NAME));</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 3 注入log成员变量</span></span><br><span class="line">        CompilationUnitTree cuTree = trees.getPath(typeElm).getCompilationUnit();</span><br><span class="line">        <span class="keyword">if</span> (cuTree <span class="keyword">instanceof</span> JCTree.JCCompilationUnit) &#123;</span><br><span class="line">            JCTree.JCCompilationUnit cu = (JCTree.JCCompilationUnit) cuTree;</span><br><span class="line">            <span class="comment">// only process on files which have been compiled from source</span></span><br><span class="line">            <span class="keyword">if</span> (cu.sourcefile.getKind() == JavaFileObject.Kind.SOURCE) &#123;</span><br><span class="line">                _findType(cu, typeElm.getQualifiedName().toString()).ifPresent(type -&gt; &#123;</span><br><span class="line">                    Slf4j slf4j = typeElm.getAnnotation(Slf4j<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">                    String system = slf4j.system();</span><br><span class="line">                    String <span class="keyword">module</span> = slf4j.<span class="keyword">module</span>();</span><br><span class="line"></span><br><span class="line">                    <span class="comment">// 生成private static final Logger log = LoggerFactory.getLogger(LoggerFactory.Type.SLF4J, &lt;annotatedClass&gt;, &lt;system&gt;, &lt;module&gt;);</span></span><br><span class="line">                    JCTree.JCExpression loggerType = _toExpression(Logger<span class="class">.<span class="keyword">class</span>.<span class="title">getCanonicalName</span>())</span>;</span><br><span class="line">                    JCTree.JCExpression getLoggerMethod = _toExpression(LoggerFactory.class.getCanonicalName() + ".getLogger");</span><br><span class="line">                    JCTree.JCExpression typeArg = _toExpression(LoggerFactory.Type.class.getCanonicalName() + "." + LoggerFactory.Type.SLF4J.name());</span><br><span class="line">                    JCTree.JCExpression nameArg = _toExpression(typeElm.getQualifiedName() + <span class="string">".class"</span>);</span><br><span class="line">                    JCTree.JCExpression systemArg = maker.Literal(system);</span><br><span class="line">                    JCTree.JCExpression moduleArg = maker.Literal(<span class="keyword">module</span>);</span><br><span class="line">                    JCTree.JCMethodInvocation getLoggerCall = maker.Apply(List.nil(), getLoggerMethod, List.of(typeArg, nameArg, systemArg, moduleArg));</span><br><span class="line">                    JCTree.JCVariableDecl logField = maker.VarDef(</span><br><span class="line">                            maker.Modifiers(Flags.PRIVATE | Flags.STATIC | Flags.FINAL),</span><br><span class="line">                            names.fromString(Logger.FIELD_NAME), loggerType, getLoggerCall);</span><br><span class="line"></span><br><span class="line">                    _insertField(type, logField);</span><br><span class="line">                &#125;);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="集成示例"><a href="#集成示例" class="headerlink" title="集成示例"></a>集成示例</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Slf</span>4j(system = <span class="string">"Vlogging"</span>, <span class="keyword">module</span> = <span class="string">"Integration"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">VloggingAnnotated</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        HashMap&lt;String, String&gt; params = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line">        params.put(<span class="string">"foo"</span>, <span class="string">"xyz"</span>);</span><br><span class="line">        log.info(VloggingAnnotated<span class="class">.<span class="keyword">class</span>.<span class="title">getCanonicalName</span>(), <span class="title">params</span>)</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>由此可见，使用方法4，业务类只要加上自定义注解，然后正常调用日志API，就可以以统一的日志格式记录日志。</p>
+<h3 id="输出示例"><a href="#输出示例" class="headerlink" title="输出示例"></a>输出示例</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2016-07-10 17:26:45 +0800 [INFO] from VloggingAnnotated in main - [Vlogging|Integration]com.xingren.v.logging.integration.VloggingAnnotated[foo=xyz]</span><br></pre></td></tr></table></figure>
+<h2 id="IntelliJ-Plugin-自动生成PSI-Element，消除编译错误"><a href="#IntelliJ-Plugin-自动生成PSI-Element，消除编译错误" class="headerlink" title="IntelliJ Plugin: 自动生成PSI Element，消除编译错误"></a>IntelliJ Plugin: 自动生成PSI Element，消除编译错误</h2><p>至此，在命令行方式下，方法4已经可以正确运行。但在IDE环境中（比如IntelliJ，Eclipse），由于一般它们都会使用自定义的编译模型，需要额外实现一个插件来根据注解信息动态修改IDE的语法树，以避免编译错误。对于IntelliJ而言，使用的是<a href="http://www.jetbrains.org/intellij/sdk/docs/basics/architectural_overview/psi_elements.html" target="_blank" rel="noopener">PSI模型</a>，相应的插件代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 继承com.intellij.psi.augment.PsiAugmentProvider类</span></span><br><span class="line"></span><br><span class="line"><span class="meta">@NotNull</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> &lt;Psi extends PsiElement&gt; <span class="function">List&lt;Psi&gt; <span class="title">getAugments</span><span class="params">(@NotNull PsiElement psiElement, @NotNull Class&lt;Psi&gt; type)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> List&lt;Psi&gt; emptyResult = Collections.emptyList();</span><br><span class="line">    <span class="comment">// skip processing during index rebuild</span></span><br><span class="line">    <span class="keyword">final</span> Project project = psiElement.getProject();</span><br><span class="line">    <span class="keyword">if</span> (DumbService.isDumb(project)) &#123;</span><br><span class="line">        <span class="keyword">return</span> emptyResult;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// Expecting that we are only augmenting an PsiClass</span></span><br><span class="line">    <span class="comment">// Don't filter !isPhysical elements or code auto completion will not work</span></span><br><span class="line">    <span class="keyword">if</span> (!(psiElement <span class="keyword">instanceof</span> PsiExtensibleClass) || !psiElement.isValid()) &#123;</span><br><span class="line">        <span class="keyword">return</span> emptyResult;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// filter non-field type</span></span><br><span class="line">    <span class="keyword">if</span> (!PsiField<span class="class">.<span class="keyword">class</span>.<span class="title">isAssignableFrom</span>(<span class="title">type</span>)) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> emptyResult;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">final</span> PsiClass psiClass = (PsiClass) psiElement;</span><br><span class="line">    <span class="comment">// see AbstractClassProcessor#process()</span></span><br><span class="line">    PsiAnnotation psiAnnotation = PsiAnnotationUtil.findAnnotation(psiClass, Slf4j<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">null</span> == psiAnnotation) &#123;</span><br><span class="line">        <span class="keyword">return</span> emptyResult;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// check cache first</span></span><br><span class="line">    <span class="keyword">if</span> (loggerCache.containsKey(psiClass.getQualifiedName())) &#123;</span><br><span class="line">        <span class="keyword">return</span> Arrays.asList((Psi) loggerCache.get(psiClass.getQualifiedName()));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">final</span> PsiManager manager = psiClass.getContainingFile().getManager();</span><br><span class="line">    <span class="keyword">final</span> PsiElementFactory psiElementFactory = JavaPsiFacade.getElementFactory(project);</span><br><span class="line">    PsiType psiLoggerType = psiElementFactory.createTypeFromText(LOGGER_TYPE, psiClass);</span><br><span class="line">    LightFieldBuilder loggerField = <span class="keyword">new</span> LightFieldBuilder(manager, LOGGER_NAME, psiLoggerType);</span><br><span class="line">    LightModifierList modifierList = (LightModifierList) loggerField.getModifierList();</span><br><span class="line">    modifierList.addModifier(PsiModifier.PRIVATE);</span><br><span class="line">    modifierList.addModifier(PsiModifier.STATIC);</span><br><span class="line">    modifierList.addModifier(PsiModifier.FINAL);</span><br><span class="line">    loggerField.setContainingClass(psiClass);</span><br><span class="line">    loggerField.setNavigationElement(psiAnnotation);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">final</span> String loggerInitializerParameter = String.format(LOGGER_CATEGORY, psiClass.getName());</span><br><span class="line">    <span class="keyword">final</span> PsiExpression initializer = psiElementFactory.createExpressionFromText(String.format(LOGGER_INITIALIZER, loggerInitializerParameter), psiClass);</span><br><span class="line">    loggerField.setInitializer(initializer);</span><br><span class="line">    <span class="comment">// add to cache</span></span><br><span class="line">    loggerCache.put(psiClass.getQualifiedName(), loggerField);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> Arrays.asList((Psi) loggerField);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a href="https://github.com/rzwitserloot/lombok" target="_blank" rel="noopener">GitHub: lombok</a></li>
+<li><a href="https://github.com/mplushnikov/lombok-intellij-plugin" target="_blank" rel="noopener">GitHub: lombok-intellij-plugin</a></li>
+<li><a href="http://hannesdorfmann.com/annotation-processing/annotationprocessing101" target="_blank" rel="noopener">ANNOTATION PROCESSING 101</a></li>
+<li><a href="https://www.javacodegeeks.com/2015/09/java-compiler-api.html" target="_blank" rel="noopener">Java Compiler API</a></li>
+<li><a href="http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started.html" target="_blank" rel="noopener">Creating Your First Plugin</a></li>
+</ul>
+
+
+  </article>
+  </script>
+    <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+  </script>
+  <div class="busuanzi center">
+    页阅读量:&nbsp;<span id="busuanzi_value_page_pv"></span>&nbsp;・&nbsp;
+    站访问量:&nbsp;<span id="busuanzi_value_site_pv"></span>&nbsp;・&nbsp;
+    站访客数:&nbsp;<span id="busuanzi_value_site_uv"></span>
+  </div>
+
+
+
+
+    </div>
+  </div>
+  <footer class="page-footer"><div class="clearfix">
+</div>
+<div class="right-foot container">
+    <div class="firstrow">
+        <a href="#top" >
+        <i class="fa fa-arrow-right"></i>
+        </a>
+        © emacoo.cn 2015-2020
+    </div>
+    <div class="secondrow">
+        <a href="https://github.com/gaoryrt/hexo-theme-pln">
+        
+        </a>
+    </div>
+</div>
+<div class="clearfix">
+</div>
+</footer>
+  <script src="//cdn.bootcss.com/jquery/2.2.1/jquery.min.js"></script>
+<script src="/js/search.js"></script>
+<script type="text/javascript">
+
+// comments below to disable loading animation
+function revealOnScroll() {
+  var scrolled = $(window).scrollTop();
+  $(".excerpt, .index-title, .index-meta, p").each(function() {
+    var current = $(this),
+      height = $(window).outerHeight(),
+      offsetTop = current.offset().top;
+    (scrolled + height + 50 > offsetTop) ? current.addClass("animation"):'';
+  });
+}
+$(window).on("scroll", revealOnScroll);
+$(document).ready(revealOnScroll)
+
+// disqus scripts
+
+
+// dropdown scripts
+$(".dropdown").click(function(event) {
+  var current = $(this);
+  event.stopPropagation();
+  $(current).children(".dropdown-content")[($(current).children(".dropdown-content").hasClass("open"))?'removeClass':'addClass']("open")
+});
+$(document).click(function(){
+    $(".dropdown-content").removeClass("open");
+})
+
+// back to top scripts
+$("a[href='#top']").click(function() {
+  $("html, body").animate({ scrollTop: 0 }, 500);
+  return false;
+});
+
+
+var path = "/search.xml";
+searchFunc(path, 'local-search-input', 'local-search-result');
+
+</script>
+
+</body>
+</html>

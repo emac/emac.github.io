@@ -1,0 +1,208 @@
+<!DOCTYPE HTML>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="google-site-verification" content>
+  
+  <title>从零搭建一个基于Istio的服务网格</title>
+  <meta name="author" content="Emac">
+   <meta name="description" content="上篇文章从微服务1.0时代的三大痛点（技术门槛高，多语言支持不足和代码侵入性强）说起，由此引出服务网格的起源和演化历史。但古语有云纸上得来终觉浅，绝知此事要躬行，不亲自撸一遍命令，怎敢跟人提服务网格？本篇我将教大家如何在本地从零搭建一个基于Istio的服务网格，从而对服务网格有一个更直观的认识。
+
+">
+  
+
+  <meta property="og:title" content="从零搭建一个基于Istio的服务网格">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta property="og:site_name" content="Emac">
+ <meta property="og:image" content="undefined">
+  
+  <link href="/apple-touch-icon-precomposed.png" sizes="180x180" rel="apple-touch-icon-precomposed">
+  <link rel="alternate" href="/atom.xml" title="Emac" type="application/atom+xml">
+  <link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.5.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/m.min.css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+</head>
+</html>
+<body>
+  <div id='wx_pic' style='display:none;'><img src='/wx_share.png'/></div>
+  <div id="main">
+    <div class="behind">
+      <div class="back">
+        <a href="/" class="black-color"><i class="fa fa-times" aria-hidden="true"></i></a>
+      </div>
+      <div class="description">
+        &nbsp;拾贝
+      </div>
+    </div>
+    <div class="container">
+      
+
+  <article class="standard post">
+    <div class="title">
+      
+  
+    <h1 class="page-title center">
+        从零搭建一个基于Istio的服务网格
+    </h1>
+  
+
+
+    </div>
+    <div class="meta center">
+      
+<time datetime="2018-05-02T16:00:00.000Z">
+  <i class="fa fa-calendar"></i>&nbsp;
+  2018-05-03
+</time>
+
+
+
+    
+    &nbsp;
+    <i class="fa fa-tag"></i>&nbsp;
+    <a href="/categories/devops/">devops</a>
+
+
+
+
+    
+    &nbsp;
+    <i class="fa fa-tag"></i>&nbsp;
+    <a href="/tags/原创/">原创</a>·<a href="/tags/Service-Mesh/">Service Mesh</a>·<a href="/tags/Istio/">Istio</a>
+
+
+    </div>
+    <hr>
+    <div class="picture-container">
+      
+    </div>
+    <blockquote>
+<p><a href="http://emacoo.cn/arch/service-mesh-overview/">上篇</a>文章从微服务1.0时代的三大痛点（技术门槛高，多语言支持不足和代码侵入性强）说起，由此引出服务网格的起源和演化历史。但古语有云<code>纸上得来终觉浅，绝知此事要躬行</code>，不亲自撸一遍命令，怎敢跟人提服务网格？本篇我将教大家如何在本地从零搭建一个基于<a href="https://istio.io/" target="_blank" rel="noopener">Istio</a>的服务网格，从而对服务网格有一个更直观的认识。</p>
+</blockquote>
+<h2 id="1-通关密码：上上下下左左右右ABAB"><a href="#1-通关密码：上上下下左左右右ABAB" class="headerlink" title="1 通关密码：上上下下左左右右ABAB"></a>1 通关密码：上上下下左左右右ABAB</h2><ul>
+<li>原料：Mac一台，VPN账号一枚</li>
+<li>做法：依序安装和运行<a href="https://kubernetes.io/" target="_blank" rel="noopener">Kubernetes</a>，<a href="https://github.com/kubernetes/minikube" target="_blank" rel="noopener">Minikube</a>，Istio</li>
+</ul>
+<p><img src="mario.png" alt></p>
+<h2 id="2-穿墙大法：Shadowsocks"><a href="#2-穿墙大法：Shadowsocks" class="headerlink" title="2 穿墙大法：Shadowsocks"></a>2 穿墙大法：Shadowsocks</h2><p>无论是Kubernetes、Minikube还是Istio，官方提供的安装文档都非常详尽，只要英文过关，依葫芦画瓢基本上都能跑通。但如果你在国内，还得加一个必要条件，学会如何<a href="https://zh.wikipedia.org/zh-hans/%E7%AA%81%E7%A0%B4%E7%BD%91%E7%BB%9C%E5%AE%A1%E6%9F%A5" target="_blank" rel="noopener">突破网络审查</a>，俗称翻墙。</p>
+<p>Mac下的翻墙软件我首推<a href="https://shadowsocks.org/en/index.html" target="_blank" rel="noopener">Shadowsocks</a>，同时支持Socks5代理和HTTP代理，最新版本可以从<a href="https://github.com/shadowsocks/ShadowsocksX-NG/releases" target="_blank" rel="noopener">GitHub</a>下载。</p>
+<h2 id="3-小Boss-kubectl"><a href="#3-小Boss-kubectl" class="headerlink" title="3 小Boss: kubectl!"></a>3 小Boss: kubectl!</h2><h3 id="3-1-安装"><a href="#3-1-安装" class="headerlink" title="3.1 安装"></a>3.1 安装</h3><p>Kubernetes是Istio首推的运行平台，因此作为第一步，我们首先来安装kubectl，Kubernetes的命令行工具，用来控制Kubernetes集群。根据<a href="https://kubernetes.io/docs/tasks/tools/install-kubectl/" target="_blank" rel="noopener">官方文档</a>，Mac下安装kubectl只需要一行命令，<code>brew install kubectl</code>，这简单、极致的用户体验让你感动的想哭。But wait…</p>
+<h3 id="3-2-穿墙1-Brew"><a href="#3-2-穿墙1-Brew" class="headerlink" title="3.2 穿墙1: Brew"></a>3.2 穿墙1: Brew</h3><p>你敲完命令，踌躇满志的按下回车之后，可能会发现，屏幕迟迟没有输出，10秒，30秒，1分钟，3分钟，10分钟。。。恭喜你，你被墙了！</p>
+<p><a href="https://brew.sh/" target="_blank" rel="noopener">Brew</a>默认的镜像源是GitHub，而GitHub时不时会被墙，即使不被墙访问速度有时也慢的令人发指，导致Brew命令也常常超时甚至失败。解决办法要么<a href="https://segmentfault.com/a/1190000008274997" target="_blank" rel="noopener">换源</a>，要么给GitHub配上Socks5代理。对码农而言，我更推荐后一种，方法如下：</p>
+<p>1) 打开~/.gitconfig文件，如果不存在则新建</p>
+<p>2) 在文件末尾添加如下配置并保存：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[http &quot;https://github.com&quot;]</span><br><span class="line">  proxy = socks5://127.0.0.1:1086</span><br><span class="line">[https &quot;https://github.com&quot;]</span><br><span class="line">  proxy = socks5://127.0.0.1:1086</span><br></pre></td></tr></table></figure>
+<p><em>注：<code>socks5://127.0.0.1:1086</code>是Shadowsocks默认开启的Socks5代理地址。</em></p>
+<p>配上Socks5代理之后，一般就可以妥妥的运行Brew命令了。</p>
+<h3 id="3-3-验证"><a href="#3-3-验证" class="headerlink" title="3.3 验证"></a>3.3 验证</h3><p>安装好kubectl之后，直接运行<code>kubectl version</code>查看版本号。完整的kubectl命令列表在<a href="https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands" target="_blank" rel="noopener">这里</a>可以找到。如果想进一步学习常见的kubectl命令，可以访问<a href="https://www.katacoda.com/courses/kubernetes/playground" target="_blank" rel="noopener">Kubernetes Playground</a>完成在线练习。</p>
+<h2 id="4-中Boss-Minikube"><a href="#4-中Boss-Minikube" class="headerlink" title="4 中Boss: Minikube!"></a>4 中Boss: Minikube!</h2><h3 id="4-1-安装"><a href="#4-1-安装" class="headerlink" title="4.1 安装"></a>4.1 安装</h3><p>安装完kubectl，接下来就是在本地搭建Kubernetes集群，Minikube是最简单的一种搭建方式，它通过VM模拟了一个单节点的Kubernetes集群。<a href="https://kubernetes.io/docs/tutorials/stateless-application/hello-minikube/" target="_blank" rel="noopener">官方文档</a>给出了Mac下的安装命令。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-darwin-amd64 &amp;&amp; \</span><br><span class="line">chmod +x minikube &amp;&amp; \</span><br><span class="line">sudo mv minikube /usr/local/bin/</span><br></pre></td></tr></table></figure>
+<p>Minikube默认使用的VM Driver是<a href="https://www.virtualbox.org/" target="_blank" rel="noopener">VirutalBox</a>，因此启动Minikube之前，还要安装VirtualBox。</p>
+<h3 id="4-2-启动"><a href="#4-2-启动" class="headerlink" title="4.2 启动"></a>4.2 启动</h3><p>安装好Minikube和VirutalBox之后，可运行如下命令第一次启动Minikube：</p>
+<p><code>minikube start --docker-env HTTP_PROXY=http://&lt;本机IP&gt;:1087 --docker-env HTTPS_PROXY=http://&lt;本机IP&gt;:1087</code></p>
+<p><em>注：官方文档给出的启动命令带有<code>--vm-driver=xhyve</code>，而事实上最新版本的Minikube已经废弃了xhyve driver，应去除。</em></p>
+<h3 id="4-3-穿墙2-Docker"><a href="#4-3-穿墙2-Docker" class="headerlink" title="4.3 穿墙2: Docker"></a>4.3 穿墙2: Docker</h3><p>你可能已经注意到，上面的启动命令中带了两个<code>--docker-env</code>参数，都指向了Shadowsocks开启的HTTP代理，为啥呢？还是因为墙。Minikube默认使用Docker作为容器运行时，并在VM中内置了一个Docker守护进程，使用的镜像源是<a href="https://hub.docker.com/" target="_blank" rel="noopener">DockerHub</a>。如果你经常使用Docker，那你一定知道在国内使用Docker一般都要修改镜像源（比如阿里云的<a href="https://cr.console.aliyun.com/#/accelerator" target="_blank" rel="noopener">容器镜像服务</a>）或者使用代理，否则拉取速度也是慢的令人发指。由于Minikube使用的是内置的Docker守护进程，使用代理更为方便，但要注意，开启Shadowsocks HTTP代理时，需要修改代理的侦听地址为本机IP，而不是默认的<code>127.0.0.1</code>，否则在VM中的Docker守护进程是无法访问到这个代理的。</p>
+<p><em>注：<code>--docker-env</code>参数只有在第一次启动Minikube时需要，之后启动直接运行<code>minikube start</code>即可。如果需要修改代理地址，可编辑<code>~/.minikube/machines/minikube/config.json</code>文件。</em></p>
+<h3 id="4-4-验证"><a href="#4-4-验证" class="headerlink" title="4.4 验证"></a>4.4 验证</h3><p>安装完Minikube之后，就可以试着创建第一个Kubernetes服务了，具体步骤参考<a href="https://kubernetes.io/docs/getting-started-guides/minikube/#quickstart" target="_blank" rel="noopener">官方文档</a>。</p>
+<h2 id="5-大Boss-Istio"><a href="#5-大Boss-Istio" class="headerlink" title="5 大Boss: Istio!"></a>5 大Boss: Istio!</h2><h3 id="5-1-安装"><a href="#5-1-安装" class="headerlink" title="5.1 安装"></a>5.1 安装</h3><p>拿到了kubectl和Minikube两大神器，搭建Istio可以说是水到渠成了。基本步骤如下，</p>
+<p>1) 启动Minikube</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">minikube start \</span><br><span class="line">  --extra-config=controller-manager.ClusterSigningCertFile=<span class="string">"/var/lib/localkube/certs/ca.crt"</span> \</span><br><span class="line">  --extra-config=controller-manager.ClusterSigningKeyFile=<span class="string">"/var/lib/localkube/certs/ca.key"</span> \</span><br><span class="line">  --extra-config=apiserver.Admission.PluginNames=NamespaceLifecycle,LimitRanger,ServiceAccount,PersistentVolumeLabel,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota \</span><br><span class="line">  --kubernetes-version=v1.9.0</span><br></pre></td></tr></table></figure>
+<p>2) 下载并解压Istio安装包</p>
+<p><code>curl -L https://git.io/getLatestIstio | sh -</code></p>
+<p>3) 进入安装目录（假设为<code>istio-0.7</code>），将<code>bin/</code>目录添加到<code>PATH</code>环境变量</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> istio-0.7</span><br><span class="line"><span class="built_in">export</span> PATH=<span class="variable">$PWD</span>/bin:<span class="variable">$PATH</span></span><br></pre></td></tr></table></figure>
+<p>4) 部署Istio的核心组件（包括外部流量网关<a href="https://istio.io/docs/tasks/traffic-management/ingress.html" target="_blank" rel="noopener">Ingress</a>, 管理Envoy实例生命周期的<a href="https://istio.io/docs/concepts/traffic-management/pilot.html" target="_blank" rel="noopener">Pilot</a>以及执行访问控制和使用策略的<a href="https://istio.io/docs/concepts/policy-and-control/mixer.html" target="_blank" rel="noopener">Mixer</a>）到Kubernetes</p>
+<p><code>kubectl apply -f install/kubernetes/istio.yaml</code></p>
+<p><em>注：如果你需要启用Istio的<a href="https://istio.io/docs/concepts/security/mutual-tls.html" target="_blank" rel="noopener">Mutual TLS Authentication</a>（服务身份验证）功能，可以改为运行<code>kubectl apply -f install/kubernetes/istio-auth.yaml</code>。</em></p>
+<p>至此，一个基于Istio的服务网格就算安装完成了。One more thing，还记得上篇文章提到的服务网格所独有的边车模式吗？为了将一个具体的服务接入Istio，需要为每一个服务实例创建一个配套的边车进程。根据<a href="https://istio.io/docs/setup/kubernetes/sidecar-injection.html" target="_blank" rel="noopener">官方文档</a>，Istio提供手动和自动两种方式来创建边车进程，前者发生于部署阶段，而后者发生于Pod创建阶段，推荐使用后者，具体步骤参考官方文档，限于篇幅，这里就不再赘述。</p>
+<h3 id="5-2-验证"><a href="#5-2-验证" class="headerlink" title="5.2 验证"></a>5.2 验证</h3><p>安装完Istio之后，可运行<code>kubectl get pods -n istio-system</code>查看所有Istio相关的Pods，确保这些Pods都处于<code>Running</code>状态。然后，你就可以开始Istio的探索之旅了，建议从官方提供的<a href="https://istio.io/docs/guides/bookinfo.html" target="_blank" rel="noopener">Bookinginfo</a>示例应用起步，这里就不再展开。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">NAME                                      READY     STATUS    RESTARTS   AGE</span><br><span class="line">istio-ca-59f6dcb7d9-5mll5                 1/1       Running   18         42d</span><br><span class="line">istio-ingress-779649ff5b-x2qmn            1/1       Running   26         42d</span><br><span class="line">istio-mixer-7f4fd7dff-6l5g5               3/3       Running   54         42d</span><br><span class="line">istio-pilot-5f5f76ddc8-6867m              2/2       Running   36         42d</span><br><span class="line">istio-sidecar-injector-7947777478-gzcfz   1/1       Running   9          41d</span><br></pre></td></tr></table></figure>
+<h2 id="6-小结"><a href="#6-小结" class="headerlink" title="6 小结"></a>6 小结</h2><p>以上就是搭建一个基于Istio的服务网格的基本教程，希望能够帮助你对服务网格有一个更直观的认识。有关服务网格的进一步介绍，以后有机会我再跟你分享。欢迎你到我的<a href="https://github.com/emac/emac.github.io/issues/2" target="_blank" rel="noopener">留言板</a>留言交流，和大家一起过过招。</p>
+<h2 id="7-参考"><a href="#7-参考" class="headerlink" title="7 参考"></a>7 参考</h2><ul>
+<li><a href="https://istio.io/docs/concepts/what-is-istio/overview.html" target="_blank" rel="noopener">Istio - Overview</a></li>
+<li><a href="http://istio.doczh.cn/" target="_blank" rel="noopener">Istio官方文档中文版</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/29586032" target="_blank" rel="noopener">数人云|万字解读:Service Mesh服务网格新生代–Istio</a></li>
+</ul>
+
+
+  </article>
+  </script>
+    <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+  </script>
+  <div class="busuanzi center">
+    页阅读量:&nbsp;<span id="busuanzi_value_page_pv"></span>&nbsp;・&nbsp;
+    站访问量:&nbsp;<span id="busuanzi_value_site_pv"></span>&nbsp;・&nbsp;
+    站访客数:&nbsp;<span id="busuanzi_value_site_uv"></span>
+  </div>
+
+
+
+
+    </div>
+  </div>
+  <footer class="page-footer"><div class="clearfix">
+</div>
+<div class="right-foot container">
+    <div class="firstrow">
+        <a href="#top" >
+        <i class="fa fa-arrow-right"></i>
+        </a>
+        © emacoo.cn 2015-2020
+    </div>
+    <div class="secondrow">
+        <a href="https://github.com/gaoryrt/hexo-theme-pln">
+        
+        </a>
+    </div>
+</div>
+<div class="clearfix">
+</div>
+</footer>
+  <script src="//cdn.bootcss.com/jquery/2.2.1/jquery.min.js"></script>
+<script src="/js/search.js"></script>
+<script type="text/javascript">
+
+// comments below to disable loading animation
+function revealOnScroll() {
+  var scrolled = $(window).scrollTop();
+  $(".excerpt, .index-title, .index-meta, p").each(function() {
+    var current = $(this),
+      height = $(window).outerHeight(),
+      offsetTop = current.offset().top;
+    (scrolled + height + 50 > offsetTop) ? current.addClass("animation"):'';
+  });
+}
+$(window).on("scroll", revealOnScroll);
+$(document).ready(revealOnScroll)
+
+// disqus scripts
+
+
+// dropdown scripts
+$(".dropdown").click(function(event) {
+  var current = $(this);
+  event.stopPropagation();
+  $(current).children(".dropdown-content")[($(current).children(".dropdown-content").hasClass("open"))?'removeClass':'addClass']("open")
+});
+$(document).click(function(){
+    $(".dropdown-content").removeClass("open");
+})
+
+// back to top scripts
+$("a[href='#top']").click(function() {
+  $("html, body").animate({ scrollTop: 0 }, 500);
+  return false;
+});
+
+
+var path = "/search.xml";
+searchFunc(path, 'local-search-input', 'local-search-result');
+
+</script>
+
+</body>
+</html>
