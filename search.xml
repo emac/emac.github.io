@@ -472,6 +472,32 @@
     </entry>
     
     <entry>
+      <title><![CDATA[我的2018书单]]></title>
+      <url>http://emacoo.cn/notes/2018-booklist/</url>
+      <content type="html"><![CDATA[<blockquote>
+<p>2018，愚者暗于成事，智者见于未萌。</p>
+</blockquote>
+<h2 id="在读"><a href="#在读" class="headerlink" title="在读"></a>在读</h2><p><img src="23737589-1_w_2.jpg" alt></p>
+<h2 id="已读"><a href="#已读" class="headerlink" title="已读"></a>已读</h2>]]></content>
+      
+        <categories>
+            
+            <category> notes </category>
+            
+        </categories>
+        
+        
+        <tags>
+            
+            <tag> 原创 </tag>
+            
+            <tag> 悦读 </tag>
+            
+        </tags>
+        
+    </entry>
+    
+    <entry>
       <title><![CDATA[所谓Serverless，你理解对了吗？]]></title>
       <url>http://emacoo.cn/arch/serverless-overview/</url>
       <content type="html"><![CDATA[<blockquote>
@@ -527,32 +553,6 @@
             <tag> 原创 </tag>
             
             <tag> Serverless </tag>
-            
-        </tags>
-        
-    </entry>
-    
-    <entry>
-      <title><![CDATA[我的2018书单]]></title>
-      <url>http://emacoo.cn/notes/2018-booklist/</url>
-      <content type="html"><![CDATA[<blockquote>
-<p>2018，愚者暗于成事，智者见于未萌。</p>
-</blockquote>
-<h2 id="在读"><a href="#在读" class="headerlink" title="在读"></a>在读</h2><p><img src="23737589-1_w_2.jpg" alt></p>
-<h2 id="已读"><a href="#已读" class="headerlink" title="已读"></a>已读</h2>]]></content>
-      
-        <categories>
-            
-            <category> notes </category>
-            
-        </categories>
-        
-        
-        <tags>
-            
-            <tag> 原创 </tag>
-            
-            <tag> 悦读 </tag>
             
         </tags>
         
