@@ -4,6 +4,49 @@
   
     
     <entry>
+      <title><![CDATA[告别2021，清零2022]]></title>
+      <url>http://emacoo.cn/notes/2021-fin/</url>
+      <content type="html"><![CDATA[<blockquote>
+<p>所谓清零思维，就是说职场人每过两年，都要对自己做一次清零，以对自己在市场中的“估值”，有一个清醒的认识。</p>
+<p>– 老K</p>
+</blockquote>
+<h1 id="System-in-read"><a href="#System-in-read" class="headerlink" title="System.in.read()"></a>System.in.read()</h1><h2 id="Books"><a href="#Books" class="headerlink" title="Books"></a>Books</h2><ul>
+<li><a href="http://e.dangdang.com/products/1901208652.html" target="_blank" rel="noopener">《银行数字化转型》- 付晓岩</a></li>
+</ul>
+<h2 id="Columns"><a href="#Columns" class="headerlink" title="Columns"></a>Columns</h2><ul>
+<li><a href="https://time.geekbang.org/column/intro/313?tab=catalog" target="_blank" rel="noopener">&lt;软件设计之美&gt; - 郑晔</a></li>
+<li><a href="https://time.geekbang.org/column/intro/113?tab=catalog" target="_blank" rel="noopener">&lt;技术管理实战 36 讲&gt; - 刘建国</a></li>
+<li><a href="https://time.geekbang.org/column/intro/100017301?tab=catalog" target="_blank" rel="noopener">&lt;数据结构与算法之美&gt; - 王争</a></li>
+<li><a href="https://time.geekbang.org/column/intro/100076501?tab=catalog" target="_blank" rel="noopener">&lt;说透数字化转型&gt; - 付晓岩</a></li>
+<li><a href="https://time.geekbang.org/column/intro/100012001?tab=catalog" target="_blank" rel="noopener">&lt;邱岳的产品实战&gt; - 邱岳</a></li>
+</ul>
+<h1 id="System-out-print"><a href="#System-out-print" class="headerlink" title="System.out.print()"></a>System.out.print()</h1><h2 id="PPT"><a href="#PPT" class="headerlink" title="PPT"></a>PPT</h2><ul>
+<li><a href="https://slides.com/emacooshen/confucius" target="_blank" rel="noopener">穿越时空的对话：《论语》中的管理智慧 (一)</a></li>
+<li><a href="https://slides.com/emacooshen/xxl-job" target="_blank" rel="noopener">XXL-JOB 原理浅析</a></li>
+<li><a href="https://slides.com/emacooshen/lifelong-learning" target="_blank" rel="noopener">穿越时空的对话：像孔子一样终身学习</a></li>
+<li><a href="https://slides.com/emacooshen/x10" target="_blank" rel="noopener">10x 程序员工作法极简笔记</a></li>
+<li><a href="https://docs.google.com/presentation/d/1Kgryi2z65PKQdZ7LanZHFPApUaWcFSLyx_X0v4dQmVU/edit?usp=sharing" target="_blank" rel="noopener">如何做好组织协同</a></li>
+</ul>
+<h2 id="Blog"><a href="#Blog" class="headerlink" title="Blog"></a>Blog</h2><p>（惭愧）</p>
+<h2 id="Run"><a href="#Run" class="headerlink" title="Run"></a>Run</h2><p><img src="2021-Run.jpeg" alt></p>
+]]></content>
+      
+        <categories>
+            
+            <category> notes </category>
+            
+        </categories>
+        
+        
+        <tags>
+            
+            <tag> 原创 </tag>
+            
+        </tags>
+        
+    </entry>
+    
+    <entry>
       <title><![CDATA[代码评审赋魅]]></title>
       <url>http://emacoo.cn/arch/the-beauty-of-code-review/</url>
       <content type="html"><![CDATA[<blockquote>
@@ -576,6 +619,32 @@
     </entry>
     
     <entry>
+      <title><![CDATA[我的2018书单]]></title>
+      <url>http://emacoo.cn/notes/2018-booklist/</url>
+      <content type="html"><![CDATA[<blockquote>
+<p>2018，愚者暗于成事，智者见于未萌。</p>
+</blockquote>
+<h2 id="在读"><a href="#在读" class="headerlink" title="在读"></a>在读</h2><p><img src="23737589-1_w_2.jpg" alt></p>
+<h2 id="已读"><a href="#已读" class="headerlink" title="已读"></a>已读</h2>]]></content>
+      
+        <categories>
+            
+            <category> notes </category>
+            
+        </categories>
+        
+        
+        <tags>
+            
+            <tag> 原创 </tag>
+            
+            <tag> 悦读 </tag>
+            
+        </tags>
+        
+    </entry>
+    
+    <entry>
       <title><![CDATA[所谓Serverless，你理解对了吗？]]></title>
       <url>http://emacoo.cn/arch/serverless-overview/</url>
       <content type="html"><![CDATA[<blockquote>
@@ -631,32 +700,6 @@
             <tag> 原创 </tag>
             
             <tag> Serverless </tag>
-            
-        </tags>
-        
-    </entry>
-    
-    <entry>
-      <title><![CDATA[我的2018书单]]></title>
-      <url>http://emacoo.cn/notes/2018-booklist/</url>
-      <content type="html"><![CDATA[<blockquote>
-<p>2018，愚者暗于成事，智者见于未萌。</p>
-</blockquote>
-<h2 id="在读"><a href="#在读" class="headerlink" title="在读"></a>在读</h2><p><img src="23737589-1_w_2.jpg" alt></p>
-<h2 id="已读"><a href="#已读" class="headerlink" title="已读"></a>已读</h2>]]></content>
-      
-        <categories>
-            
-            <category> notes </category>
-            
-        </categories>
-        
-        
-        <tags>
-            
-            <tag> 原创 </tag>
-            
-            <tag> 悦读 </tag>
             
         </tags>
         
