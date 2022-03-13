@@ -4,6 +4,59 @@
   
     
     <entry>
+      <title><![CDATA[不仅仅是一把瑞士军刀 —— Apifox的野望和不足]]></title>
+      <url>http://emacoo.cn/arch/apifox-vision/</url>
+      <content type="html"><![CDATA[<p>声明：本文内容不涉及任何 Apifox 的功能介绍，一来网上这方面的文章已经汗牛充栋，二来 Apifox 本身的用户体验做的非常好，对于开发者而言学习成本基本为零。</p>
+<blockquote>
+<p>阮一峰：不管你是前端开发还是后端开发，只要项目是服务架构，它可能会大大提升你的开发效率。</p>
+<p>虫师：我们很难把它描述为一款接口管理工具或接口自动化测试工具，它增强了团队协作能力，这对一个研发团队而言很重要。</p>
+<p>池建强：Apifox，这是一代更比一代强。</p>
+</blockquote>
+<h2 id="什么是Apifox？"><a href="#什么是Apifox？" class="headerlink" title="什么是Apifox？"></a>什么是Apifox？</h2><p>看了一众大咖们对 <a href="https://www.apifox.cn/" target="_blank" rel="noopener">Apifox</a> 赞不绝口，你可能会好奇 Apifox 究竟是何方神圣？根据<a href="https://www.apifox.cn/help/app/introduce/" target="_blank" rel="noopener">官方定义</a>，Apifox 是 API 文档、API 调试、API Mock、API 自动化测试一体化协作平台，定位 Postman + Swagger + Mock + JMeter。如果你也曾使用过 Apifox，相信你会深表赞同。</p>
+<p><img src="apifox-platform.png" alt></p>
+<p>那么问题来了，在盛行小而美的 API 工具的当下，为什么会横空出世一个“瑞士军刀”般存在的 Apifox？答案就在 Apifox 的宗旨里面：节省研发团队的每一分钟。</p>
+<p>在 Apifox 之前，为了达成对 API 语义的理解和实现上的一致性，前端、后端、测试使出十八般武艺，定义 API 用 Swagger，生成文档用  YAPI，前端自测用 Mock，接口测试用 Postman，性能测试用 JMeter，各类配置、数据、链接满天飞，重要的事情说三遍啊说三遍。有了 Apifox 之后，前端、后端、测试之间原本去中心化的 P2P 通讯方式变成以 Apifox 为中心的星型通讯方式，通讯对象从原本充满不确定性的人，变成稳定可靠的平台，各类配置、数据、链接也有了统一管理的地方，团队通讯成本和 API 管理成本大幅降低。</p>
+<p><img src="apifox-purpose.png" alt></p>
+<h2 id="Apifox的野望"><a href="#Apifox的野望" class="headerlink" title="Apifox的野望"></a>Apifox的野望</h2><p>如果你认为一体化协作平台就是 Apifox 的一切，那你可能低估了 Apifox 的野心。</p>
+<p>先来看下 Apifox 的收费模式，</p>
+<p><img src="apifox-price.png" alt></p>
+<p>是的，你没有看错，免费版即享“无任何限制”，不限团队人数、不限功能、不限项目数、不限接口数，如此奢华的免费套餐，放眼全网也很难找到第二家（SaaS 平台）。</p>
+<p>再来看下<a href="https://www.apifox.cn/help/app/changelog/" target="_blank" rel="noopener">更新日志</a>，留意以下更新：</p>
+<ol>
+<li>[2021-03-14] 1.2.0 新增【在线分享接口文档】功能。</li>
+<li>[2021-10-29] 1.4.10 上线 API Hub功能。1）通过API Hub查找/发现他人公开的 API 项目。2）可将项目发布到API Hub（设置为公开项目即可），允许任何人通过API Hub访问、克隆该项目。</li>
+<li>[2022-01-11] 1.4.17 公开项目支持通过 web 访问、运行。</li>
+</ol>
+<p>看懂了吗？<a href="https://www.apifox.cn/apihub/" target="_blank" rel="noopener">API Hub</a> 才是 Apifox 真正的野望，打造开放 API 共享平台，连接各类企业级 API，加速企业商业创新，成为企业之间的“交友”平台。有了 API Hub，企业之间谈合作，见面第一句话就是：PPT is cheap, show me the API!</p>
+<h2 id="Apifox的不足"><a href="#Apifox的不足" class="headerlink" title="Apifox的不足"></a>Apifox的不足</h2><p>要配得上如此宏大的野心，在我看来，Apifox 无论是架构上还是产品功能上都还有很长的路要走。</p>
+<p>从架构上来看，首先要做的是提升项目中模型的地位。创建完一个新项目，首先应该定义模型，然后才是接口。我们知道，模型是一个软件的骨架，是一个系统的核心。接口是系统外在能力的呈现，模型是系统内在逻辑的载体。一旦脱离了模型，接口就是无源之水，无本之木。</p>
+<p>其次，作为接口的诞生地，Apifox 不妨制定或者倡导一些好的 API 设计规约，像 <a href="https://google.aip.dev/general" target="_blank" rel="noopener">Google AIP (API Improvements Proposal)</a>，<a href="https://docs.microsoft.com/en-us/azure/architecture/best-practices/api-design" target="_blank" rel="noopener">Microsoft RESTFul API Design</a>等。</p>
+<p>从产品功能来看，不要局限于 Postman + Swagger + Mock + JMeter 这句 Slogan，以用户为中心，添加诸如一键生成单元测试代码、自动化测试源码编辑模式等实用功能，解决更多实际 API 开发过程中的痛点。</p>
+<h2 id="展望"><a href="#展望" class="headerlink" title="展望"></a>展望</h2><p>借微服务之东风，Apifox 自 2020 年 12 月 28 日推出 1.0 版本以来，以其独特的集成优势、优秀的用户体验，在国内IT界一时风光无两。不过在国外，似乎知者寥寥，stackoverflow 上甚至查无此人。随着今年 2 月份 2.0 英文版的推出，相信很快会吸引众多国外开发者的目光，祝愿 Apifox 走出国门，走向世界，早日成为国产软件之光！</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a href="https://www.apifox.cn/help/#_20-%E5%88%86%E9%92%9F%E5%AD%A6%E4%BC%9A-apifox-%F0%9F%91%8D" target="_blank" rel="noopener">20 分钟学会 Apifox</a></li>
+<li><a href="https://www.apifox.cn/help/app/introduce/" target="_blank" rel="noopener">Apifox 介绍</a></li>
+<li><a href="https://www.infoq.com/articles/API-Design-Joshua-Bloch/" target="_blank" rel="noopener">Joshua Bloch: Bumper-Sticker API Design</a></li>
+<li><a href="https://mp.weixin.qq.com/s/qWrSyzJ54YEw8sLCxAEKlA" target="_blank" rel="noopener">深度 | API 设计最佳实践的思考</a></li>
+</ul>
+]]></content>
+      
+        <categories>
+            
+            <category> arch </category>
+            
+        </categories>
+        
+        
+        <tags>
+            
+            <tag> 原创,API </tag>
+            
+        </tags>
+        
+    </entry>
+    
+    <entry>
       <title><![CDATA[告别2021，清零2022]]></title>
       <url>http://emacoo.cn/notes/2021-fin/</url>
       <content type="html"><![CDATA[<blockquote>
@@ -619,32 +672,6 @@
     </entry>
     
     <entry>
-      <title><![CDATA[我的2018书单]]></title>
-      <url>http://emacoo.cn/notes/2018-booklist/</url>
-      <content type="html"><![CDATA[<blockquote>
-<p>2018，愚者暗于成事，智者见于未萌。</p>
-</blockquote>
-<h2 id="在读"><a href="#在读" class="headerlink" title="在读"></a>在读</h2><p><img src="23737589-1_w_2.jpg" alt></p>
-<h2 id="已读"><a href="#已读" class="headerlink" title="已读"></a>已读</h2>]]></content>
-      
-        <categories>
-            
-            <category> notes </category>
-            
-        </categories>
-        
-        
-        <tags>
-            
-            <tag> 原创 </tag>
-            
-            <tag> 悦读 </tag>
-            
-        </tags>
-        
-    </entry>
-    
-    <entry>
       <title><![CDATA[所谓Serverless，你理解对了吗？]]></title>
       <url>http://emacoo.cn/arch/serverless-overview/</url>
       <content type="html"><![CDATA[<blockquote>
@@ -700,6 +727,32 @@
             <tag> 原创 </tag>
             
             <tag> Serverless </tag>
+            
+        </tags>
+        
+    </entry>
+    
+    <entry>
+      <title><![CDATA[我的2018书单]]></title>
+      <url>http://emacoo.cn/notes/2018-booklist/</url>
+      <content type="html"><![CDATA[<blockquote>
+<p>2018，愚者暗于成事，智者见于未萌。</p>
+</blockquote>
+<h2 id="在读"><a href="#在读" class="headerlink" title="在读"></a>在读</h2><p><img src="23737589-1_w_2.jpg" alt></p>
+<h2 id="已读"><a href="#已读" class="headerlink" title="已读"></a>已读</h2>]]></content>
+      
+        <categories>
+            
+            <category> notes </category>
+            
+        </categories>
+        
+        
+        <tags>
+            
+            <tag> 原创 </tag>
+            
+            <tag> 悦读 </tag>
             
         </tags>
         
