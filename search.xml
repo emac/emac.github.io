@@ -32,6 +32,7 @@
 <p>从架构上来看，首先要做的是提升项目中模型的地位。创建完一个新项目，首先应该定义模型，然后才是接口。我们知道，模型是一个软件的骨架，是一个系统的核心。接口是系统外在能力的呈现，模型是系统内在逻辑的载体。一旦脱离了模型，接口就是无源之水，无本之木。</p>
 <p>其次，作为接口的诞生地，Apifox 不妨制定或者倡导一些好的 API 设计规约，像 <a href="https://google.aip.dev/general" target="_blank" rel="noopener">Google AIP (API Improvements Proposal)</a>，<a href="https://docs.microsoft.com/en-us/azure/architecture/best-practices/api-design" target="_blank" rel="noopener">Microsoft RESTFul API Design</a>等。</p>
 <p>从产品功能来看，不要局限于 Postman + Swagger + Mock + JMeter 这句 Slogan，以用户为中心，添加诸如一键生成单元测试代码、自动化测试源码编辑模式等实用功能，解决更多实际 API 开发过程中的痛点。</p>
+<p>除此之外，官方资料中似乎没有看到大规模团队协作的案例，无论是SaaS版本还是私有化部署版本，平台所能支持的团队体量大小暂时未知。</p>
 <h2 id="展望"><a href="#展望" class="headerlink" title="展望"></a>展望</h2><p>借微服务之东风，Apifox 自 2020 年 12 月 28 日推出 1.0 版本以来，以其独特的集成优势、优秀的用户体验，在国内IT界一时风光无两。不过在国外，似乎知者寥寥，stackoverflow 上甚至查无此人。随着今年 2 月份 2.0 英文版的推出，相信很快会吸引众多国外开发者的目光，祝愿 Apifox 走出国门，走向世界，早日成为国产软件之光！</p>
 <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
 <li><a href="https://www.apifox.cn/help/#_20-%E5%88%86%E9%92%9F%E5%AD%A6%E4%BC%9A-apifox-%F0%9F%91%8D" target="_blank" rel="noopener">20 分钟学会 Apifox</a></li>
