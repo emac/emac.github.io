@@ -1,0 +1,195 @@
+<!DOCTYPE HTML>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="google-site-verification" content>
+  
+  <title>故障模型哪家强？PDR 模型来帮忙</title>
+  <meta name="author" content="Emac">
+   <meta name="description" content="搞安全的同学都知道，有一个非常著名的网络安全模型叫 PDR 模型，提出者是美国国际互联网安全系统公司（ISS），其核心论断是网络安全是一个时间问题，对应的公式为 Et = Dt + Rt - Pt，其中：
+
+Et (Exposure) 暴露时间，系统暴露在攻击下的时间；
+Pt (Prevent) 防">
+  
+
+  <meta property="og:title" content="故障模型哪家强？PDR 模型来帮忙">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta property="og:site_name" content="Emac">
+ <meta property="og:image" content="undefined">
+  
+  <link href="/apple-touch-icon-precomposed.png" sizes="180x180" rel="apple-touch-icon-precomposed">
+  <link rel="alternate" href="/atom.xml" title="Emac" type="application/atom+xml">
+  <link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.5.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/m.min.css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+</head>
+</html>
+<body>
+  <div id='wx_pic' style='display:none;'><img src='/wx_share.png'/></div>
+  <div id="main">
+    <div class="behind">
+      <div class="back">
+        <a href="/" class="black-color"><i class="fa fa-times" aria-hidden="true"></i></a>
+      </div>
+      <div class="description">
+        &nbsp;拾贝
+      </div>
+    </div>
+    <div class="container">
+      
+
+  <article class="standard post">
+    <div class="title">
+      
+  
+    <h1 class="page-title center">
+        故障模型哪家强？PDR 模型来帮忙
+    </h1>
+  
+
+
+    </div>
+    <div class="meta center">
+      
+<time datetime="2022-04-17T13:00:00.000Z">
+  <i class="fa fa-calendar"></i>&nbsp;
+  2022-04-17
+</time>
+
+
+
+    
+    &nbsp;
+    <i class="fa fa-tag"></i>&nbsp;
+    <a href="/categories/arch/">arch</a>
+
+
+
+
+    
+    &nbsp;
+    <i class="fa fa-tag"></i>&nbsp;
+    <a href="/tags/原创-故障/">原创,故障</a>
+
+
+    </div>
+    <hr>
+    <div class="picture-container">
+      
+    </div>
+    <blockquote>
+<p>搞安全的同学都知道，有一个非常著名的网络安全模型叫 <a href="https://baike.baidu.com/item/PDR/17563449" target="_blank" rel="noopener">PDR 模型</a>，提出者是美国国际互联网安全系统公司（ISS），其核心论断是网络安全是一个时间问题，对应的公式为 <code>Et = Dt + Rt - Pt</code>，其中：</p>
+<ul>
+<li><strong>Et</strong> (Exposure) 暴露时间，系统暴露在攻击下的时间；</li>
+<li><strong>Pt</strong> (Prevent) 防御时间，系统扛住外部攻击的时间，或者说攻击者成功渗透的整个时间；</li>
+<li><strong>Dt</strong> (Detect) 检测时间，安全检测系统发现攻击所需要的时间；</li>
+<li><strong>Rt</strong> (Response) 响应时间，发现攻击到攻击路径被切断，攻击被中止的整个时间。</li>
+</ul>
+<p>PDR 模型直观、易懂，为安全防护工作提供了比较实用的指导框架。在系统可能出现的各类故障中，安全只是其中一种，既然 PDR 模型能指导解决安全问题，那么 PDR 模型是否也能指导解决其他故障呢？我认为是肯定的。</p>
+</blockquote>
+<h1 id="1-什么是-PDR-故障模型？"><a href="#1-什么是-PDR-故障模型？" class="headerlink" title="1 什么是 PDR 故障模型？"></a>1 什么是 PDR 故障模型？</h1><p>对照 PDR 模型，先来看一下故障的生命周期，</p>
+<p><img src="/Users/emac/git.repo/emacoo.hexo/source/_posts/pdr/PDR.png" alt></p>
+<p>从上图可以非常直观的看出，为了缩短故障时间（Failure Time），我们要想办法尽可能的缩短检测时间（Detect Time）和响应时间（Response Time），同时延长防御时间（Prevent Time）。缩短检测时间对应提升监控、告警能力，缩短响应时间对应提升故障修复、CI/CD能力，延长防御时间对应提升系统的容错能力或者说健壮性。这里比较有意思的一点是关于防御时间，只要我们能把防御时间延长到足够长（超过检测时间和响应时间之和），那么故障就没有机会造成实际影响，也就等同于“消灭”了故障。</p>
+<h1 id="2-防火优于灭火"><a href="#2-防火优于灭火" class="headerlink" title="2 防火优于灭火"></a>2 防火优于灭火</h1><blockquote>
+<p>魏文侯曰：‘子昆弟三人其孰最善为医？’扁鹊曰：‘长兄最善，中兄次之，扁鹊最为下。’</p>
+<p>—— 《鶡冠子·卷下·世贤第十六》</p>
+</blockquote>
+<p>扁鹊三兄弟中，扁鹊 Rt 能力强，二哥 Dt 能力强，大哥 Pt 能力强，但此 Pt 非彼 Pt。在上述 PDR 模型中，Pt 是指故障发生之后的防御能力，而大哥的 Pt 能力是指故障（疾病）发生之前的防御能力，也即防患未然的能力。</p>
+<p>受限于各方面因素，绝大多数情况下，故障防御时间是小于检测时间和响应时间之和的，因此，一旦系统出现故障，就难免会造成一些实际影响。那么有没有办法避免这类影响呢？有的，向扁鹊大哥学习，防火优于灭火。如何做到防患未然呢？以史为鉴，可以知兴替，也即故障复盘。</p>
+<p>故障复盘是一件极其重要的事情，它是如此重要以至于大多数人都低估了其重要性。小到个人，大到公司，从大大小小各类故障中总结经验教训，学到很多书本上学不到的知识，从而获得最大程度的提升，这也是成长性团队的重要特征。网上关于故障复盘的资料很多，这里我只想强调三点，</p>
+<p>第一，故障复盘越早做效果越好（当然是在故障被妥善处理之后）。注意，处理故障过程中，应尽可能保留故障现场，同时做好过程数据备份，以便事后进行复盘。</p>
+<p>第二，在整个故障复盘过程中，应秉持对事不对人的原则，一切从事实出发，用事实说话，这样才能找到真正的根本原因，并据此提出行之有效的改进措施。</p>
+<p>第三，每项改进措施应指定唯一的责任人，并区分优先级，对于高优先级的改进措施，应明确闭环时间（比如 1 个月）。</p>
+<p>最后，推荐一篇陈皓老师的专栏（文末参考资料第 2 篇），同时我在附录里贴了一份故障复盘报告模板，希望大家在平时工作中能够用到。</p>
+<h1 id="3-小结"><a href="#3-小结" class="headerlink" title="3 小结"></a>3 小结</h1><p>在今天这篇文章里，我首先提出了一个专门用于故障处理的 PDR 模型，然后给出了一些故障复盘的原则，希望能够对你有所帮助。欢迎你到我的<a href="https://github.com/emac/emac.github.io/issues/2" target="_blank" rel="noopener">留言板</a>留言交流，和大家一起过过招。</p>
+<h1 id="附录"><a href="#附录" class="headerlink" title="附录"></a>附录</h1><p><em>故障复盘报告模板</em></p>
+<p><img src="/Users/emac/git.repo/emacoo.hexo/source/_posts/pdr/template.jpeg" alt></p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ul>
+<li><a href="https://time.geekbang.org/column/article/1059" target="_blank" rel="noopener">左耳听风-故障处理最佳实践：应对故障</a></li>
+<li><a href="https://time.geekbang.org/column/article/1064" target="_blank" rel="noopener">左耳听风-故障处理最佳实践：故障改进</a></li>
+<li><a href="https://www.huxiu.com/article/242040.html" target="_blank" rel="noopener">余晟以为-浅谈“黑匣子思维”</a></li>
+</ul>
+
+
+  </article>
+  </script>
+
+
+
+
+    </div>
+  </div>
+  <footer class="page-footer"><div class="clearfix">
+</div>
+<div class="right-foot container">
+    <div class="firstrow">
+        <a href="#top" >
+        <i class="fa fa-arrow-right"></i>
+        </a>
+        © emacoo.cn 2015-2022
+    </div>
+    <div class="secondrow">
+        <a href="https://github.com/gaoryrt/hexo-theme-pln">
+        
+        </a>
+    </div>
+</div>
+<div class="clearfix">
+</div>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="busuanzi center">
+    <span id="busuanzi_container_site_pv">本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span id="busuanzi_container_site_uv">本站访客数<span id="busuanzi_value_site_uv"></span>人次</span>
+    <span id="busuanzi_container_page_pv">
+      本文总阅读量<span id="busuanzi_value_page_pv"></span>次
+    </span>
+</div>
+</footer>
+  <script src="//cdn.bootcss.com/jquery/2.2.1/jquery.min.js"></script>
+<script src="/js/search.js"></script>
+<script type="text/javascript">
+
+// comments below to disable loading animation
+function revealOnScroll() {
+  var scrolled = $(window).scrollTop();
+  $(".excerpt, .index-title, .index-meta, p").each(function() {
+    var current = $(this),
+      height = $(window).outerHeight(),
+      offsetTop = current.offset().top;
+    (scrolled + height + 50 > offsetTop) ? current.addClass("animation"):'';
+  });
+}
+$(window).on("scroll", revealOnScroll);
+$(document).ready(revealOnScroll)
+
+// disqus scripts
+
+
+// dropdown scripts
+$(".dropdown").click(function(event) {
+  var current = $(this);
+  event.stopPropagation();
+  $(current).children(".dropdown-content")[($(current).children(".dropdown-content").hasClass("open"))?'removeClass':'addClass']("open")
+});
+$(document).click(function(){
+    $(".dropdown-content").removeClass("open");
+})
+
+// back to top scripts
+$("a[href='#top']").click(function() {
+  $("html, body").animate({ scrollTop: 0 }, 500);
+  return false;
+});
+
+
+var path = "/search.xml";
+searchFunc(path, 'local-search-input', 'local-search-result');
+
+</script>
+
+</body>
+</html>
