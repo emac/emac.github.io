@@ -17,7 +17,7 @@
 <p>PDR 模型直观、易懂，为安全防护工作提供了比较实用的指导框架。在系统可能出现的各类故障中，安全只是其中一种，既然 PDR 模型能指导解决安全问题，那么 PDR 模型是否也能指导解决其他故障呢？我认为是肯定的。</p>
 </blockquote>
 <h1 id="1-什么是-PDR-故障模型？"><a href="#1-什么是-PDR-故障模型？" class="headerlink" title="1 什么是 PDR 故障模型？"></a>1 什么是 PDR 故障模型？</h1><p>对照 PDR 模型，先来看一下故障的生命周期，</p>
-<p><img src="/Users/emac/git.repo/emacoo.hexo/source/_posts/pdr/PDR.png" alt></p>
+<p><img src="PDR.png" alt></p>
 <p>从上图可以非常直观的看出，为了缩短故障时间（Failure Time），我们要想办法尽可能的缩短检测时间（Detect Time）和响应时间（Response Time），同时延长防御时间（Prevent Time）。缩短检测时间对应提升监控、告警能力，缩短响应时间对应提升故障修复、CI/CD能力，延长防御时间对应提升系统的容错能力或者说健壮性。这里比较有意思的一点是关于防御时间，只要我们能把防御时间延长到足够长（超过检测时间和响应时间之和），那么故障就没有机会造成实际影响，也就等同于“消灭”了故障。</p>
 <h1 id="2-防火优于灭火"><a href="#2-防火优于灭火" class="headerlink" title="2 防火优于灭火"></a>2 防火优于灭火</h1><blockquote>
 <p>魏文侯曰：‘子昆弟三人其孰最善为医？’扁鹊曰：‘长兄最善，中兄次之，扁鹊最为下。’</p>
@@ -32,7 +32,7 @@
 <p>最后，推荐一篇陈皓老师的专栏（文末参考资料第 2 篇），同时我在附录里贴了一份故障复盘报告模板，希望大家在平时工作中能够用到。</p>
 <h1 id="3-小结"><a href="#3-小结" class="headerlink" title="3 小结"></a>3 小结</h1><p>在今天这篇文章里，我首先提出了一个专门用于故障处理的 PDR 模型，然后给出了一些故障复盘的原则，希望能够对你有所帮助。欢迎你到我的<a href="https://github.com/emac/emac.github.io/issues/2" target="_blank" rel="noopener">留言板</a>留言交流，和大家一起过过招。</p>
 <h1 id="附录"><a href="#附录" class="headerlink" title="附录"></a>附录</h1><p><em>故障复盘报告模板</em></p>
-<p><img src="/Users/emac/git.repo/emacoo.hexo/source/_posts/pdr/template.jpeg" alt></p>
+<p><img src="template.jpeg" alt></p>
 <h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ul>
 <li><a href="https://time.geekbang.org/column/article/1059" target="_blank" rel="noopener">左耳听风-故障处理最佳实践：应对故障</a></li>
 <li><a href="https://time.geekbang.org/column/article/1064" target="_blank" rel="noopener">左耳听风-故障处理最佳实践：故障改进</a></li>
@@ -725,6 +725,32 @@
     </entry>
     
     <entry>
+      <title><![CDATA[我的2018书单]]></title>
+      <url>http://emacoo.cn/notes/2018-booklist/</url>
+      <content type="html"><![CDATA[<blockquote>
+<p>2018，愚者暗于成事，智者见于未萌。</p>
+</blockquote>
+<h2 id="在读"><a href="#在读" class="headerlink" title="在读"></a>在读</h2><p><img src="23737589-1_w_2.jpg" alt></p>
+<h2 id="已读"><a href="#已读" class="headerlink" title="已读"></a>已读</h2>]]></content>
+      
+        <categories>
+            
+            <category> notes </category>
+            
+        </categories>
+        
+        
+        <tags>
+            
+            <tag> 原创 </tag>
+            
+            <tag> 悦读 </tag>
+            
+        </tags>
+        
+    </entry>
+    
+    <entry>
       <title><![CDATA[所谓Serverless，你理解对了吗？]]></title>
       <url>http://emacoo.cn/arch/serverless-overview/</url>
       <content type="html"><![CDATA[<blockquote>
@@ -780,32 +806,6 @@
             <tag> 原创 </tag>
             
             <tag> Serverless </tag>
-            
-        </tags>
-        
-    </entry>
-    
-    <entry>
-      <title><![CDATA[我的2018书单]]></title>
-      <url>http://emacoo.cn/notes/2018-booklist/</url>
-      <content type="html"><![CDATA[<blockquote>
-<p>2018，愚者暗于成事，智者见于未萌。</p>
-</blockquote>
-<h2 id="在读"><a href="#在读" class="headerlink" title="在读"></a>在读</h2><p><img src="23737589-1_w_2.jpg" alt></p>
-<h2 id="已读"><a href="#已读" class="headerlink" title="已读"></a>已读</h2>]]></content>
-      
-        <categories>
-            
-            <category> notes </category>
-            
-        </categories>
-        
-        
-        <tags>
-            
-            <tag> 原创 </tag>
-            
-            <tag> 悦读 </tag>
             
         </tags>
         
