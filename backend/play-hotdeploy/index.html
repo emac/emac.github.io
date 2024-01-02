@@ -1,0 +1,188 @@
+<!DOCTYPE HTML>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="google-site-verification" content>
+  
+  <title>【Play】热部署是如何工作的？</title>
+  <meta name="author" content="Emac">
+   <meta name="description" content="1.什么是热部署
+所谓热部署，就是在应用正在运行的时候升级软件，却不需要重新启动应用。对于Java应用程序来说，热部署就是在运行时更新Java类文件。– 百度百科
+
+对于Java应用，有三种常见的实现热部署的方式：
+
+JPDA: 利用JVM原生的JPDA接口，参见官方文档
+Classloader: ">
+  
+
+  <meta property="og:title" content="【Play】热部署是如何工作的？">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta property="og:site_name" content="Emac">
+ <meta property="og:image" content="undefined">
+  
+  <link href="/apple-touch-icon-precomposed.png" sizes="180x180" rel="apple-touch-icon-precomposed">
+  <link rel="alternate" href="/atom.xml" title="Emac" type="application/atom+xml">
+  <link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.5.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/m.min.css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+</head>
+</html>
+<body>
+  <div id='wx_pic' style='display:none;'><img src='/wx_share.png'/></div>
+  <div id="main">
+    <div class="behind">
+      <div class="back">
+        <a href="/" class="black-color"><i class="fa fa-times" aria-hidden="true"></i></a>
+      </div>
+      <div class="description">
+        &nbsp;拾贝
+      </div>
+    </div>
+    <div class="container">
+      
+
+  <article class="standard post">
+    <div class="title">
+      
+  
+    <h1 class="page-title center">
+        【Play】热部署是如何工作的？
+    </h1>
+  
+
+
+    </div>
+    <div class="meta center">
+      
+<time datetime="2015-12-26T16:00:00.000Z">
+  <i class="fa fa-calendar"></i>&nbsp;
+  2015-12-27
+</time>
+
+
+
+    
+    &nbsp;
+    <i class="fa fa-tag"></i>&nbsp;
+    <a href="/categories/backend/">backend</a>
+
+
+
+
+    
+    &nbsp;
+    <i class="fa fa-tag"></i>&nbsp;
+    <a href="/tags/原创/">原创</a>·<a href="/tags/Play/">Play</a>
+
+
+    </div>
+    <hr>
+    <div class="picture-container">
+      
+    </div>
+    <h2 id="1-什么是热部署"><a href="#1-什么是热部署" class="headerlink" title="1.什么是热部署"></a>1.什么是热部署</h2><blockquote>
+<p>所谓热部署，就是在应用正在运行的时候升级软件，却不需要重新启动应用。对于Java应用程序来说，热部署就是在运行时更新Java类文件。– <a href="http://baike.baidu.com/view/5036687.htm" target="_blank" rel="noopener">百度百科</a></p>
+</blockquote>
+<p>对于Java应用，有三种常见的实现热部署的方式：</p>
+<ul>
+<li>JPDA: 利用JVM原生的JPDA接口，参见<a href="https://docs.oracle.com/javase/8/docs/technotes/guides/jpda/enhancements1.4.html#hotswap" target="_blank" rel="noopener">官方文档</a></li>
+<li>Classloader: 通过创建新的Classloader来加载新的Class文件。OSGi就是通过这种方式实现Bundle的动态加载。</li>
+<li>Agent: 通过自定义Java Agent实现Class动态加载。JRebel，hotswapagent使用的就是这种方式。</li>
+</ul>
+<p>Play console自带的auto-reload功能正是基于上述第二种方式实现的。</p>
+<h2 id="2-Auto-reload机制"><a href="#2-Auto-reload机制" class="headerlink" title="2.Auto-reload机制"></a>2.Auto-reload机制</h2><p>Play console是Typesafe封装的一种特殊的的sbt console，主要增加了activator new和activator ui两个命令。其auto-reload功能是以sbt插件（”com.typesafe.play” % “sbt-plugin”）的形式提供的，sbt-plugin通过sbt-run-support类库连接到play开发模式下的启动类（play.core.server.DevServerStart）。每当应用收到请求时，play会通过sbt-plugin检查是否有源文件被修改，如果存在，则调用sbt命令进行编译，然后依次停止老的play应用，创建新的classloader，然后启动新的play应用，在此过程中运行sbt的JVM并没有被重启，只是play应用完成了重启。</p>
+<h2 id="3-源码分析"><a href="#3-源码分析" class="headerlink" title="3.源码分析"></a>3.源码分析</h2><p>以下分别从sbt-plugin,sbt-run-support和play-server挑选3个核心类对上述流程进行简单梳理。</p>
+<h3 id="play-sbt-run-PlayRun"><a href="#play-sbt-run-PlayRun" class="headerlink" title="play.sbt.run.PlayRun"></a>play.sbt.run.PlayRun</h3><p>定义play run task，通过Reloader传递sbt回调函数引用给DevServerStart。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">[<span class="type">Line</span> <span class="number">73</span><span class="number">-93</span>: <span class="type">PlayRun</span>#playRunTask]</span><br><span class="line"><span class="keyword">lazy</span> <span class="keyword">val</span> devModeServer = <span class="type">Reloader</span>.startDevMode(</span><br><span class="line">      runHooks.value,</span><br><span class="line">      (javaOptions in <span class="type">Runtime</span>).value,</span><br><span class="line">      dependencyClasspath.value.files,</span><br><span class="line">      dependencyClassLoader.value,</span><br><span class="line">      reloadCompile,										# sbt回调函数引用</span><br><span class="line">      reloaderClassLoader.value,</span><br><span class="line">      assetsClassLoader.value,</span><br><span class="line">      playCommonClassloader.value,</span><br><span class="line">      playMonitoredFiles.value,</span><br><span class="line">      fileWatchService.value,</span><br><span class="line">      (managedClasspath in <span class="type">DocsApplication</span>).value.files,</span><br><span class="line">      playDocsJar.value,</span><br><span class="line">      playDefaultPort.value,</span><br><span class="line">      playDefaultAddress.value,</span><br><span class="line">      baseDirectory.value,</span><br><span class="line">      devSettings.value,</span><br><span class="line">      args,</span><br><span class="line">      runSbtTask,</span><br><span class="line">      (mainClass in (<span class="type">Compile</span>, <span class="type">Keys</span>.run)).value.get</span><br><span class="line">    )</span><br></pre></td></tr></table></figure>
+<h3 id="play-runsupport-Reloader"><a href="#play-runsupport-Reloader" class="headerlink" title="play.runsupport.Reloader"></a>play.runsupport.Reloader</h3><p>通过反射启动play应用，将Reloader自身作为参数传入。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[<span class="type">Line</span> <span class="number">203</span><span class="number">-212</span>: <span class="type">Reloader</span>#startDevMode]</span><br><span class="line"><span class="keyword">val</span> server = &#123;</span><br><span class="line">    <span class="keyword">val</span> mainClass = applicationLoader.loadClass(mainClassName)</span><br><span class="line">    <span class="keyword">if</span> (httpPort.isDefined) &#123;</span><br><span class="line">        <span class="keyword">val</span> mainDev = mainClass.getMethod(<span class="string">"mainDevHttpMode"</span>, classOf[<span class="type">BuildLink</span>], classOf[<span class="type">BuildDocHandler</span>], classOf[<span class="type">Int</span>], classOf[<span class="type">String</span>])</span><br><span class="line">        mainDev.invoke(<span class="literal">null</span>, reloader, buildDocHandler, httpPort.get: java.lang.<span class="type">Integer</span>, httpAddress).asInstanceOf[play.core.server.<span class="type">ServerWithStop</span>]</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> mainDev = mainClass.getMethod(<span class="string">"mainDevOnlyHttpsMode"</span>, classOf[<span class="type">BuildLink</span>], classOf[<span class="type">BuildDocHandler</span>], classOf[<span class="type">Int</span>], classOf[<span class="type">String</span>])</span><br><span class="line">        mainDev.invoke(<span class="literal">null</span>, reloader, buildDocHandler, httpsPort.get: java.lang.<span class="type">Integer</span>, httpAddress).asInstanceOf[play.core.server.<span class="type">ServerWithStop</span>]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="play-core-server-DevServerStart"><a href="#play-core-server-DevServerStart" class="headerlink" title="play.core.server.DevServerStart"></a>play.core.server.DevServerStart</h3><p>从注释可以清楚的看到stop-and-start的重启逻辑。</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><span class="line">[<span class="type">Line</span> <span class="number">113</span><span class="number">-180</span>: <span class="type">DevServerStart</span>#mainDev]</span><br><span class="line"><span class="keyword">val</span> reloaded = buildLink.reload <span class="keyword">match</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="type">NonFatal</span>(t) =&gt; <span class="type">Failure</span>(t)</span><br><span class="line">    <span class="keyword">case</span> cl:</span><br><span class="line">        <span class="type">ClassLoader</span> =&gt; <span class="type">Success</span>(<span class="type">Some</span>(cl))</span><br><span class="line">    <span class="keyword">case</span> <span class="literal">null</span> =&gt; <span class="type">Success</span>(<span class="type">None</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">reloaded.flatMap &#123;</span><br><span class="line">    maybeClassLoader =&gt;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">val</span> maybeApplication: <span class="type">Option</span>[<span class="type">Try</span>[<span class="type">Application</span>]] = maybeClassLoader.map &#123;</span><br><span class="line">            projectClassloader =&gt;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line"></span><br><span class="line">                    <span class="keyword">if</span> (lastState.isSuccess) &#123;</span><br><span class="line">                        println()</span><br><span class="line">                        println(play.utils.<span class="type">Colors</span>.magenta(<span class="string">"--- (RELOAD) ---"</span>))</span><br><span class="line">                        println()</span><br><span class="line">                    &#125;</span><br><span class="line"></span><br><span class="line">                    <span class="keyword">val</span> reloadable = <span class="keyword">this</span></span><br><span class="line"></span><br><span class="line">                    <span class="comment">// First, stop the old application if it exists</span></span><br><span class="line">                    lastState.foreach(<span class="type">Play</span>.stop)</span><br><span class="line"></span><br><span class="line">                    <span class="comment">// Create the new environment</span></span><br><span class="line">                    <span class="keyword">val</span> environment = <span class="type">Environment</span>(path, projectClassloader, <span class="type">Mode</span>.<span class="type">Dev</span>)</span><br><span class="line">                    <span class="keyword">val</span> sourceMapper = <span class="keyword">new</span> <span class="type">SourceMapper</span> &#123;</span><br><span class="line">                        <span class="function"><span class="keyword">def</span> <span class="title">sourceOf</span></span>(className: <span class="type">String</span>, line: <span class="type">Option</span>[<span class="type">Int</span>]) = &#123;</span><br><span class="line">                            <span class="type">Option</span>(buildLink.findSource(className, line.map(_.asInstanceOf[java.lang.<span class="type">Integer</span>]).orNull)).flatMap &#123;</span><br><span class="line">                                <span class="keyword">case</span> <span class="type">Array</span>(file: java.io.<span class="type">File</span>, <span class="literal">null</span>) =&gt; <span class="type">Some</span>((file, <span class="type">None</span>))</span><br><span class="line">                                <span class="keyword">case</span> <span class="type">Array</span>(file: java.io.<span class="type">File</span>, line: java.lang.<span class="type">Integer</span>) =&gt; <span class="type">Some</span>((file, <span class="type">Some</span>(line)))</span><br><span class="line">                                <span class="keyword">case</span> _ =&gt; <span class="type">None</span></span><br><span class="line">                            &#125;</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line"></span><br><span class="line">                    <span class="keyword">val</span> webCommands = <span class="keyword">new</span> <span class="type">DefaultWebCommands</span></span><br><span class="line">                    currentWebCommands = <span class="type">Some</span>(webCommands)</span><br><span class="line"></span><br><span class="line">                    <span class="keyword">val</span> newApplication = <span class="type">Threads</span>.withContextClassLoader(projectClassloader) &#123;</span><br><span class="line">                        <span class="keyword">val</span> context = <span class="type">ApplicationLoader</span>.createContext(environment, dirAndDevSettings, <span class="type">Some</span>(sourceMapper), webCommands)</span><br><span class="line">                        <span class="keyword">val</span> loader = <span class="type">ApplicationLoader</span>(context)</span><br><span class="line">                        loader.load(context)</span><br><span class="line">                    &#125;</span><br><span class="line"></span><br><span class="line">                    <span class="type">Play</span>.start(newApplication)</span><br><span class="line"></span><br><span class="line">                    <span class="type">Success</span>(newApplication)</span><br><span class="line">                &#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">                    <span class="keyword">case</span> e:</span><br><span class="line">                        <span class="type">PlayException</span> =&gt; &#123;</span><br><span class="line">                            lastState = <span class="type">Failure</span>(e)</span><br><span class="line">                            lastState</span><br><span class="line">                        &#125;</span><br><span class="line">                    <span class="keyword">case</span> <span class="type">NonFatal</span>(e) =&gt; &#123;</span><br><span class="line">                        lastState = <span class="type">Failure</span>(<span class="type">UnexpectedException</span>(unexpected = <span class="type">Some</span>(e)))</span><br><span class="line">                        lastState</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">case</span> e:</span><br><span class="line">                        <span class="type">LinkageError</span> =&gt; &#123;</span><br><span class="line">                            lastState = <span class="type">Failure</span>(<span class="type">UnexpectedException</span>(unexpected = <span class="type">Some</span>(e)))</span><br><span class="line">                            lastState</span><br><span class="line">                        &#125;</span><br><span class="line">                &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    maybeApplication.flatMap(_.toOption).foreach &#123;</span><br><span class="line">        app =&gt;</span><br><span class="line">            lastState = <span class="type">Success</span>(app)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    maybeApplication.getOrElse(lastState)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="4-Gotcha"><a href="#4-Gotcha" class="headerlink" title="4. Gotcha"></a>4. Gotcha</h2><p>上述的实现看上去并不复杂，那为什么老牌的Tomcat，JBoss容器却始终没有提供类似的机制呢？原因很简单，Play是stateless的，而其余的不是。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a href="http://jto.github.io/articles/play_anatomy_part2_sbt/" target="_blank" rel="noopener">http://jto.github.io/articles/play_anatomy_part2_sbt/</a></li>
+</ul>
+
+
+  </article>
+  </script>
+
+
+
+
+    </div>
+  </div>
+  <footer class="page-footer"><div class="clearfix">
+</div>
+<div class="right-foot container">
+    <div class="firstrow">
+        <a href="#top" >
+        <i class="fa fa-arrow-right"></i>
+        </a>
+        © emacoo.cn 2015-2024
+    </div>
+    <div class="secondrow">
+        <a href="https://github.com/gaoryrt/hexo-theme-pln">
+        
+        </a>
+    </div>
+</div>
+<div class="clearfix">
+</div>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="busuanzi center">
+    <span id="busuanzi_container_site_pv">本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span id="busuanzi_container_site_uv">本站访客数<span id="busuanzi_value_site_uv"></span>人次</span>
+    <span id="busuanzi_container_page_pv">
+      本文总阅读量<span id="busuanzi_value_page_pv"></span>次
+    </span>
+</div>
+</footer>
+  <script src="//cdn.bootcss.com/jquery/2.2.1/jquery.min.js"></script>
+<script src="/js/search.js"></script>
+<script type="text/javascript">
+
+// comments below to disable loading animation
+function revealOnScroll() {
+  var scrolled = $(window).scrollTop();
+  $(".excerpt, .index-title, .index-meta, p").each(function() {
+    var current = $(this),
+      height = $(window).outerHeight(),
+      offsetTop = current.offset().top;
+    (scrolled + height + 50 > offsetTop) ? current.addClass("animation"):'';
+  });
+}
+$(window).on("scroll", revealOnScroll);
+$(document).ready(revealOnScroll)
+
+// disqus scripts
+
+
+// dropdown scripts
+$(".dropdown").click(function(event) {
+  var current = $(this);
+  event.stopPropagation();
+  $(current).children(".dropdown-content")[($(current).children(".dropdown-content").hasClass("open"))?'removeClass':'addClass']("open")
+});
+$(document).click(function(){
+    $(".dropdown-content").removeClass("open");
+})
+
+// back to top scripts
+$("a[href='#top']").click(function() {
+  $("html, body").animate({ scrollTop: 0 }, 500);
+  return false;
+});
+
+
+var path = "/search.xml";
+searchFunc(path, 'local-search-input', 'local-search-result');
+
+</script>
+
+</body>
+</html>
