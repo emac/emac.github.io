@@ -7,12 +7,12 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="google-site-verification" content>
   
-  <title>Mini AI Agent - 如何用 100 行代码构建一个最小智能体？</title>
+  <title>【Mini AI Agent】如何用 100 行代码构建一个最小智能体？</title>
   <meta name="author" content="Emac">
    <meta name="description" content="今年 3 月份，知名人工智能科学家吴恩达（Andrew Ng）在社交平台 X 上发帖提到，“我认为 AI 代理工作流程将在今年推动 AI 的大规模进步——甚至可能比下一代基础模型还要多……GPT-3.5（零样本）的正确率为 48.1%，GPT-4（零样本）为 67.0%，而在智能体循环中，GPT-3">
   
 
-  <meta property="og:title" content="Mini AI Agent - 如何用 100 行代码构建一个最小智能体？">
+  <meta property="og:title" content="【Mini AI Agent】如何用 100 行代码构建一个最小智能体？">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta property="og:site_name" content="Emac">
  <meta property="og:image" content="undefined">
@@ -44,7 +44,7 @@
       
   
     <h1 class="page-title center">
-        Mini AI Agent - 如何用 100 行代码构建一个最小智能体？
+        【Mini AI Agent】如何用 100 行代码构建一个最小智能体？
     </h1>
   
 
@@ -91,11 +91,11 @@
 <h3 id="2-1-效果演示"><a href="#2-1-效果演示" class="headerlink" title="2.1 效果演示"></a>2.1 效果演示</h3><p>先来看一下效果演示，</p>
 <p><img src="ai-agent-demo.gif" alt></p>
 <p><em>图：Mini AI Agent应用演示</em></p>
-<p>看似平淡无奇的两次问答，实际上已经体现了智能体的核心循环：感知-决策-行动。</p>
+<p>看似平淡无奇的两次问答，实际上已经体现了智能体的核心循环：<strong>感知-决策-行动</strong>。</p>
 <ul>
-<li>感知：接收问题</li>
-<li>决策：理解问题，确定目标，然后通过推理决定使用何种工具（即制定计划）</li>
-<li>行动：使用工具获取信息，然后生成答案</li>
+<li><strong>感知</strong>：接收问题</li>
+<li><strong>决策</strong>：理解问题，确定目标，然后通过推理决定使用何种工具（即制定计划）</li>
+<li><strong>行动</strong>：使用工具获取信息，然后生成答案</li>
 </ul>
 <h3 id="2-2-环境准备"><a href="#2-2-环境准备" class="headerlink" title="2.2 环境准备"></a>2.2 环境准备</h3><h4 id="申请账号：百度千帆"><a href="#申请账号：百度千帆" class="headerlink" title="申请账号：百度千帆"></a>申请账号：百度千帆</h4><ol>
 <li>访问<a href="https://cloud.baidu.com/product/wenxinworkshop" target="_blank" rel="noopener">百度智能云千帆</a>，注册账号并登录<a href="https://console.bce.baidu.com/qianfan/overview" target="_blank" rel="noopener">千帆大模型控制台</a></li>
@@ -151,7 +151,7 @@
 <li>此处可以看到，借助 Gradio 框架，短短几行代码，就可以构建出一个简洁的对话框应用，非常 Nice!</li>
 </ul>
 <p>至此，一个极简的智能体应用就构建成功了，前后仅用 100 行代码。完整代码参见 <a href="https://github.com/emac/langchain-samples/blob/main/mini-ai-agent.ipynb" target="_blank" rel="noopener">GitHub</a>。</p>
-<h4 id="彩蛋：智能体如何思考？"><a href="#彩蛋：智能体如何思考？" class="headerlink" title="彩蛋：智能体如何思考？"></a>彩蛋：智能体如何思考？</h4><p>看完演示，拆解完程序，你可能对智能体里的<strong>“智能“</strong>两字的理解还是有点模模糊糊。其实要真正理解这一点，光看程序还不够，得看下大模型的响应结果（见下）。注意其中 <code>response_metadata</code> 有一个很有意思的 <code>thoughts</code> 字段，其代表了大模型的思考过程，是不是和人类非常类似？</p>
+<h4 id="彩蛋：智能体如何思考？"><a href="#彩蛋：智能体如何思考？" class="headerlink" title="彩蛋：智能体如何思考？"></a>彩蛋：智能体如何思考？</h4><p>看完演示，拆解完程序，你可能对智能体里的<strong>“智能“</strong>两字的理解还是有点模模糊糊。其实要真正理解这一点，光看程序还不够，得看下大模型的响应结果（见下）。注意其中 <code>response_metadata</code> 有一个很有意思的 <code>thoughts</code> 字段（<code>用户想要知道一个特定IP地址的地理位置信息，我需要使用search_ip工具来获取这个信息</code>），其代表了大模型的思考过程，是不是和人类非常类似？</p>
 <figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># 问题：120.230.93.202属于哪个城市？</span><br><span class="line"># 大模型响应结果</span><br><span class="line">additional_kwargs=&#123;'finish_reason': 'function_call', 'request_id': 'as-fcd0dz2mmg', 'object': 'chat.completion', 'search_info': [], 'function_call': &#123;'name': 'search_ip', 'arguments': '&#123;"question":"120.230.93.202属于哪个城市？","ip":"120.230.93.202"&#125;'&#125;&#125; </span><br><span class="line"></span><br><span class="line">response_metadata=&#123;'token_usage': &#123;'prompt_tokens': 194, 'completion_tokens': 63, 'total_tokens': 257&#125;, 'model_name': 'ERNIE-3.5-8K', 'finish_reason': 'function_call', 'id': 'as-fcd0dz2mmg', 'object': 'chat.completion', 'created': 1714900176, 'result': '', 'is_truncated': False, 'need_clear_history': False, 'function_call': &#123;'name': 'search_ip', 'thoughts': '用户想要知道一个特定IP地址的地理位置信息，我需要使用search_ip工具来获取这个信息。', 'arguments': '&#123;"question":"120.230.93.202属于哪个城市？","ip":"120.230.93.202"&#125;'&#125;, 'usage': &#123;'prompt_tokens': 194, 'completion_tokens': 63, 'total_tokens': 257&#125;&#125; id='run-0706ab6f-a21f-4352-bbb1-1f1a0f13c426-0'</span><br></pre></td></tr></table></figure>
 <h2 id="3-小结"><a href="#3-小结" class="headerlink" title="3 小结"></a>3 小结</h2><p>本文基于百度千帆大模型，使用 Langchain 和 Gradio 框架，用短短 100 行代码就构建出一个极简的智能体应用。该应用能够根据用户问题，选择不同的工具获取信息，并生成最终回答，体现了智能体最核心的三步循环：感知-决策-行动。基于这个演示应用，相信聪明的你可以构建出更复杂、更智能的智能体应用，欢迎<a href="https://github.com/emac/emac.github.io/issues" target="_blank" rel="noopener">留言</a>交流。</p>
 <h2 id="4-参考"><a href="#4-参考" class="headerlink" title="4 参考"></a>4 参考</h2><ul>
